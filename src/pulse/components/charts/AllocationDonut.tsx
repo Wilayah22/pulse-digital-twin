@@ -21,7 +21,7 @@ export function AllocationDonut({ result }: { result: SimulationResult }) {
     },
   ];
   return (
-    <div className="flex flex-col items-center gap-3 sm:flex-row lg:flex-col">
+    <div className="pn-donut flex flex-col items-center gap-3 sm:flex-row lg:flex-col">
       <div dir="ltr" className="relative h-[190px] w-[190px] shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>

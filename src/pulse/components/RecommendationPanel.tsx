@@ -19,6 +19,7 @@ import {
 import type { Recommendation, SimulationResult } from "../engine";
 import { useSimulation } from "../state/SimulationProvider";
 import { useLang } from "../i18n/LanguageProvider";
+import { ReportButton } from "./report/ReportButton";
 import { Card, CardHeader, Skeleton } from "./ui";
 
 const KIND_ICON: Record<Recommendation["kind"], LucideIcon> = {
@@ -96,6 +97,8 @@ export function RecommendationPanel() {
         subtitle={t("مستخرجة من نتائج المحاكاة المحسوبة — لا توصيات ثابتة", "Derived from computed simulation results, never canned advice")}
         action={
           result && (
+            <div className="flex items-center gap-1.5">
+            <ReportButton />
             <button
               type="button"
               onClick={() => downloadReport(result)}
@@ -103,6 +106,7 @@ export function RecommendationPanel() {
             >
               <Download size={13} /> {t("تصدير CSV", "Export CSV")}
             </button>
+            </div>
           )
         }
       />

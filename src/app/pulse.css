@@ -303,6 +303,49 @@ html[data-presenting] #twin > div > div.relative {
   margin-inline: auto;
 }
 
+/* PDF report: rendered off screen, printed alone on A4 */
+#pulse-report-root {
+  position: fixed;
+  top: 0;
+  left: -10000px;
+  width: 740px;
+  background: #fff;
+}
+#pulse-report-root .pulse-root {
+  background: #fff;
+}
+#pulse-report-root .recharts-surface {
+  overflow: visible;
+}
+#pulse-report-root li span {
+  white-space: nowrap;
+}
+#pulse-report-root .pn-donut {
+  flex-direction: column;
+}
+@page {
+  size: A4;
+  margin: 14mm 12mm;
+}
+@media print {
+  html,
+  body {
+    background: #fff !important;
+  }
+  body > *:not(#pulse-report-root) {
+    display: none !important;
+  }
+  #pulse-report-root {
+    position: static;
+    width: auto;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .break-before-page {
+    break-before: page;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pulse-flow,
   .pulse-ping,
