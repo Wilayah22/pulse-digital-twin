@@ -246,7 +246,7 @@ path.pulse-flow.pulse-delay-in {
 /* Splash screen */
 @keyframes pulse-splash-out {
   0%,
-  70% {
+  85% {
     opacity: 1;
   }
   100% {
@@ -255,7 +255,7 @@ path.pulse-flow.pulse-delay-in {
   }
 }
 .pulse-splash {
-  animation: pulse-splash-out 2.2s ease forwards;
+  animation: pulse-splash-out 4.5s ease forwards;
 }
 @keyframes pulse-rise {
   from {
