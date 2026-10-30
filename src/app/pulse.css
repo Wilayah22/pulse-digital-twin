@@ -304,11 +304,12 @@ html[data-presenting] #twin > div > div.relative {
 }
 
 /* PDF report: rendered off screen, printed alone on A4 */
+/* Rendered at the printable A4 width (210 mm − 2 × 12 mm margins) so charts measure exactly what prints. */
 #pulse-report-root {
   position: fixed;
   top: 0;
   left: -10000px;
-  width: 740px;
+  width: 186mm;
   background: #fff;
 }
 #pulse-report-root .pulse-root {
@@ -337,7 +338,7 @@ html[data-presenting] #twin > div > div.relative {
   }
   #pulse-report-root {
     position: static;
-    width: auto;
+    width: 186mm;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
