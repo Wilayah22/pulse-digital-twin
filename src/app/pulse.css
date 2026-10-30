@@ -286,6 +286,20 @@ path.pulse-flow.pulse-delay-in {
   margin-inline: auto;
 }
 
+/* Presentation mode: full-width twin sized to stay clear of the caption card */
+html[data-presenting] aside,
+html[data-presenting] .pn-side {
+  display: none;
+}
+html[data-presenting] .pn-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+html[data-presenting] #twin > div > div.relative {
+  max-width: calc((100vh - 400px) * 1200 / 560);
+  min-width: min(100%, 720px);
+  margin-inline: auto;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pulse-flow,
   .pulse-ping,

@@ -60,9 +60,9 @@ export function Dashboard() {
         <div className="flex">
           <Sidebar />
           <main id="overview" className="min-w-0 flex-1 scroll-mt-28 p-4 lg:p-5">
-            <div className="grid grid-cols-1 gap-5 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[340px_minmax(0,1fr)]">
+            <div className="pn-grid grid grid-cols-1 gap-5 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[340px_minmax(0,1fr)]">
               {/* In RTL the first column sits on the right: controls and basin status. */}
-              <div className="order-2 space-y-5 lg:order-1">
+              <div className="pn-side order-2 space-y-5 lg:order-1">
                 <ControlPanel />
                 <BasinStatusPanel />
                 <DecisionFactors />

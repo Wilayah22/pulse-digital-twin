@@ -62,17 +62,25 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
       setSelectedBasin(null);
       applyPreset(step.preset);
       setSelectedDay(step.day);
-      document.getElementById(step.section)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      // Wait a frame so the presentation layout is applied before scrolling.
+      requestAnimationFrame(() =>
+        document.getElementById(step.section)?.scrollIntoView({ behavior: "smooth", block: "start" }),
+      );
     },
     [applyPreset, setSelectedDay, setSelectedBasin],
   );
 
   const stop = useCallback(() => {
     setIndex(null);
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
     reset();
   }, [reset]);
 
   const start = useCallback(() => {
+    // Full screen must be requested inside the click; browsers without it still get the presentation layout.
+    if (document.fullscreenEnabled && !document.fullscreenElement) {
+      void document.documentElement.requestFullscreen().catch(() => {});
+    }
     setPlaying(true);
     go(0);
   }, [go]);
@@ -83,6 +91,25 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     const t = setTimeout(() => go(index + 1), STEP_MS);
     return () => clearTimeout(t);
   }, [index, playing, go]);
+
+  // Presentation layout: hide side panels so the twin fills the screen.
+  const presenting = index !== null;
+  useEffect(() => {
+    document.documentElement.toggleAttribute("data-presenting", presenting);
+    return () => document.documentElement.removeAttribute("data-presenting");
+  }, [presenting]);
+
+  // Leaving full screen (Esc in the browser) ends the presentation.
+  useEffect(() => {
+    if (!presenting) return;
+    let entered = false;
+    const onChange = () => {
+      if (document.fullscreenElement) entered = true;
+      else if (entered) stop();
+    };
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, [presenting, stop]);
 
   useEffect(() => {
     if (index === null) return;
