@@ -1,6 +1,6 @@
 "use client";
 
-import { ChartColumn, CloudSun, FileText, House, LayoutGrid, Sprout, type LucideIcon } from "lucide-react";
+import { ChartColumn, CloudSun, FileText, Globe2, House, LayoutGrid, Sprout, type LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export const NAV: { id: string; label: string; Icon: LucideIcon }[] = [
@@ -9,6 +9,7 @@ export const NAV: { id: string; label: string; Icon: LucideIcon }[] = [
   { id: "basins", label: "الأحواض", Icon: Sprout },
   { id: "weather", label: "الطقس", Icon: CloudSun },
   { id: "compare", label: "المقارنة", Icon: ChartColumn },
+  { id: "impact", label: "الأثر", Icon: Globe2 },
   { id: "report", label: "التقارير", Icon: FileText },
 ];
 

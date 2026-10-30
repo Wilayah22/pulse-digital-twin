@@ -234,6 +234,58 @@ path.pulse-flow.pulse-delay-in {
     pulse-appear 0.6s ease 2.4s both;
 }
 
+@keyframes pulse-progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* Splash screen */
+@keyframes pulse-splash-out {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+.pulse-splash {
+  animation: pulse-splash-out 2.2s ease forwards;
+}
+@keyframes pulse-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.pulse-rise {
+  animation: pulse-rise 0.7s ease both;
+}
+
+/* Full-screen digital twin */
+#twin:fullscreen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: auto;
+  border-radius: 0;
+  padding: 24px;
+  background: #f5f5f0;
+}
+#twin:fullscreen svg[role="img"] {
+  max-width: calc((100vh - 170px) * 1200 / 560);
+  margin-inline: auto;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pulse-flow,
   .pulse-ping,
@@ -248,7 +300,8 @@ path.pulse-flow.pulse-delay-in {
   .pulse-spin,
   .pulse-shimmer-wave,
   .pulse-night,
-  .pulse-delay-in {
+  .pulse-delay-in,
+  .pulse-rise {
     animation: none !important;
   }
 }

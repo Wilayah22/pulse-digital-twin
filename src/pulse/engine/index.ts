@@ -8,3 +8,4 @@ export * from "./weatherScenario";
 export * from "./validate";
 export * from "./simulate";
 export { buildRecommendations } from "./recommendations";
+export * from "./impact";

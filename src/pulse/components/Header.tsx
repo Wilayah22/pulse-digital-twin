@@ -5,6 +5,7 @@ import Image from "next/image";
 import { SIMULATION_DAYS, SITE } from "../engine";
 import { useSimulation } from "../state/SimulationProvider";
 import { weatherInfo } from "../weather/codes";
+import { StartTourButton } from "./PresentationTour";
 import { fmt, shortDateAr } from "./ui";
 
 /** Pulse logo cropped from the brand artwork: emblem with the wordmark to its left (RTL order: emblem, then name). */
@@ -93,6 +94,7 @@ export function Header() {
             </div>
           </div>
         </div>
+        <StartTourButton />
         <button
           type="button"
           className="flex h-10 w-10 items-center justify-center rounded-full bg-pn-bg text-pn-navy ring-1 ring-pn-line hover:bg-pn-line/60"

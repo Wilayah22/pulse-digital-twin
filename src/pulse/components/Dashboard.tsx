@@ -16,6 +16,9 @@ import { Sidebar } from "./Sidebar";
 import { DigitalTwinScene } from "./twin/DigitalTwinScene";
 import { Card, CardHeader, Skeleton } from "./ui";
 import { WeatherForecast } from "./WeatherForecast";
+import { ImpactPanel } from "./ImpactPanel";
+import { TourProvider } from "./PresentationTour";
+import { Splash } from "./Splash";
 
 function Charts() {
   const { result, selectedDay, setSelectedDay, strategy } = useSimulation();
@@ -50,6 +53,8 @@ function Charts() {
 export function Dashboard() {
   return (
     <SimulationProvider>
+      <TourProvider>
+      <Splash />
       <div dir="rtl" lang="ar" className="pulse-root min-h-dvh">
         <Header />
         <div className="flex">
@@ -69,6 +74,7 @@ export function Dashboard() {
                 <ScenarioPresets />
                 <KpiCards />
                 <Charts />
+                <ImpactPanel />
                 <div className="grid grid-cols-1 gap-5">
                   <WeatherForecast />
                   <RecommendationPanel />
@@ -84,6 +90,7 @@ export function Dashboard() {
           </main>
         </div>
       </div>
+      </TourProvider>
     </SimulationProvider>
   );
 }

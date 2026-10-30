@@ -11,6 +11,7 @@ import {
   applyWaterInputs,
   buildScenarioWeather,
   deliverySchedule,
+  estimateImpact,
   extraterrestrialRadiation,
   forecastRainDrainage,
   leachingRequirement,
@@ -254,5 +255,31 @@ describe("input validation", () => {
     assert.equal(s.ecw, DEFAULT_INPUTS.ecw);
     assert.equal(s.delayHours, 0);
     assert.equal(s.kc, 1.2);
+  });
+});
+
+describe("oasis impact estimate", () => {
+  it("scales the simulated weekly saving by basins and weeks", () => {
+    const r = run();
+    const est = estimateImpact(r, {
+      basins: 100,
+      weeksPerYear: 10,
+      pumpingKwhPerM3: 0.5,
+      tariffSarPerKwh: 0.2,
+      litresPerPersonDay: 250,
+      co2KgPerKwh: 0.5,
+    });
+    const perBasin = (r.traditional.totalUsed - r.pulse.totalUsed) / 3;
+    near(est.savedPerBasinWeek, perBasin, 1e-9);
+    near(est.annualWaterM3, perBasin * 1000, 1e-6);
+    near(est.energyKwh, est.annualWaterM3 * 0.5, 1e-6);
+    near(est.costSar, est.energyKwh * 0.2, 1e-6);
+    near(est.peopleEquivalent, est.annualWaterM3 / ((250 * 365) / 1000), 1e-6);
+  });
+
+  it("never reports negative savings", () => {
+    const r = run();
+    const flipped = { pulse: r.traditional, traditional: r.pulse };
+    assert.equal(estimateImpact(flipped).annualWaterM3, 0);
   });
 });

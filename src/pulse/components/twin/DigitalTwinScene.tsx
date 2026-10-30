@@ -7,6 +7,7 @@ import { useSimulation } from "../../state/SimulationProvider";
 import { basinDayViews, reservoirOnDay, type BasinDayView } from "../../state/selectors";
 import { COLORS, HEALTH_META, Skeleton, fmt, shortDateAr } from "../ui";
 import { BasinDetailPanel } from "./BasinDetailPanel";
+import { FullscreenButton } from "./FullscreenButton";
 import { Palm } from "./Palm";
 import { atmosphereFor, type Atmosphere } from "./atmosphere";
 import { Clouds, DayCycle, Dust, HeatShimmer, Rain, SkyTint, Sun, WeatherDefs } from "./WeatherFx";
@@ -651,6 +652,7 @@ export function DigitalTwinScene() {
           </div>
         )}
 
+        <FullscreenButton targetId="twin" />
         {selected && <BasinDetailPanel view={selected} onClose={() => setSelectedBasin(null)} />}
       </div>
 
