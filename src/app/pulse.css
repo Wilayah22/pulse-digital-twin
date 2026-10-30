@@ -1,0 +1,254 @@
+/* Pulse dashboard: scoped overrides of the planner's global styles, plus animations. */
+
+.pulse-root {
+  overflow-x: clip;
+  font-family: var(--font-plex), var(--font-inter), system-ui, sans-serif;
+  background: #f5f5f0;
+  color: #1a2b34;
+  color-scheme: light;
+}
+.pulse-root h1,
+.pulse-root h2,
+.pulse-root h3 {
+  color: inherit;
+  font-family: inherit;
+}
+.pulse-root .latin {
+  font-family: var(--font-inter), var(--font-plex), system-ui, sans-serif;
+}
+.pulse-root :focus-visible {
+  outline: 2px solid #2699c7;
+  outline-offset: 2px;
+}
+.pulse-root ::selection {
+  background: #2699c7;
+  color: #fff;
+}
+
+/* Range sliders. --fill is the filled percentage; RTL fills from the right. */
+.pulse-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(to left, var(--accent, #38a169) var(--fill, 50%), #e5e7e2 var(--fill, 50%));
+  cursor: pointer;
+}
+.pulse-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--accent, #38a169);
+  box-shadow: 0 1px 4px rgba(16, 42, 56, 0.25);
+  transition: transform 0.15s;
+}
+.pulse-range::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+.pulse-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--accent, #38a169);
+}
+
+/* Digital twin animations */
+@keyframes pulse-flow {
+  to {
+    stroke-dashoffset: -64;
+  }
+}
+.pulse-flow {
+  stroke-dasharray: 12 20;
+  animation: pulse-flow linear infinite;
+}
+@keyframes pulse-ping {
+  0% {
+    opacity: 0.85;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+.pulse-ping {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pulse-ping 2.2s ease-out infinite;
+}
+@keyframes pulse-sway {
+  0%,
+  100% {
+    transform: rotate(calc(var(--sway-amp, 1.2deg) * -1));
+  }
+  50% {
+    transform: rotate(var(--sway-amp, 1.2deg));
+  }
+}
+.pulse-sway {
+  transform-box: view-box;
+  animation: pulse-sway var(--sway-dur, 6s) ease-in-out infinite;
+}
+@keyframes pulse-ripple {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.3);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+}
+.pulse-ripple {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pulse-ripple 2.4s ease-out infinite;
+}
+@keyframes pulse-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+}
+.pulse-drop {
+  animation: pulse-drop 1.6s ease-in infinite;
+}
+@keyframes pulse-shimmer {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+.pulse-shimmer {
+  animation: pulse-shimmer 3s ease-in-out infinite;
+}
+@keyframes pulse-pop {
+  0% {
+    transform: scale(0.96);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.pulse-pop {
+  animation: pulse-pop 0.45s ease-out;
+}
+
+/* Weather effects */
+@keyframes pulse-drift {
+  from {
+    transform: translateX(-260px);
+  }
+  to {
+    transform: translateX(1460px);
+  }
+}
+.pulse-drift,
+.pulse-drift-fast {
+  animation: pulse-drift linear infinite;
+}
+@keyframes pulse-rain {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(var(--rain-dx, -60px), 620px);
+  }
+}
+.pulse-rain {
+  animation: pulse-rain linear infinite;
+}
+@keyframes pulse-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.pulse-spin {
+  transform-box: view-box;
+  animation: pulse-spin 60s linear infinite;
+}
+@keyframes pulse-shimmer-wave {
+  0%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.15;
+  }
+  50% {
+    transform: translateX(-30px);
+    opacity: 0.45;
+  }
+}
+.pulse-shimmer-wave {
+  animation: pulse-shimmer-wave 2.6s ease-in-out infinite;
+}
+@keyframes pulse-night {
+  0% {
+    opacity: 0;
+  }
+  35% {
+    opacity: 0.42;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.pulse-night {
+  opacity: 0;
+  animation: pulse-night 1.4s ease-in-out;
+}
+@keyframes pulse-appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* Flow starts only once the delayed turn arrives. */
+.pulse-delay-in {
+  animation-name: pulse-appear;
+  animation-duration: 0.6s;
+  animation-delay: 2.4s;
+  animation-fill-mode: both;
+}
+path.pulse-flow.pulse-delay-in {
+  animation:
+    pulse-flow 1.2s linear infinite,
+    pulse-appear 0.6s ease 2.4s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-flow,
+  .pulse-ping,
+  .pulse-sway,
+  .pulse-ripple,
+  .pulse-drop,
+  .pulse-shimmer,
+  .pulse-pop,
+  .pulse-drift,
+  .pulse-drift-fast,
+  .pulse-rain,
+  .pulse-spin,
+  .pulse-shimmer-wave,
+  .pulse-night,
+  .pulse-delay-in {
+    animation: none !important;
+  }
+}

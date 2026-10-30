@@ -1,0 +1,12 @@
+# Render Blueprint: Dashboard → New → Blueprint → pick this repo.
+# Pulse is fully client-side, so it deploys as a free static site (no sleeping, global CDN).
+services:
+  - type: web
+    name: pulse-digital-twin
+    runtime: static
+    buildCommand: npm ci && npm run build
+    staticPublishPath: out
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"

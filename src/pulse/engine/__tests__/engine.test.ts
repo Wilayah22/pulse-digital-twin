@@ -1,0 +1,258 @@
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+import {
+  BASINS,
+  DEFAULT_CONFIG,
+  DEFAULT_INPUTS,
+  DEMO_WEATHER,
+  SCENARIO_PRESETS,
+  SOIL,
+  allocatePulse,
+  applyWaterInputs,
+  buildScenarioWeather,
+  deliverySchedule,
+  extraterrestrialRadiation,
+  forecastRainDrainage,
+  leachingRequirement,
+  penmanMonteithET0,
+  readilyAvailableWater,
+  runSimulation,
+  sanitizeInputs,
+  saturationWater,
+  totalAvailableWater,
+  updateSoilSalinity,
+  waterStressCoefficient,
+  weightedWaterFilling,
+  windAt2m,
+  type SimulationInputs,
+} from "../index";
+
+const near = (actual: number, expected: number, tol: number, msg?: string) =>
+  assert.ok(Math.abs(actual - expected) <= tol, `${msg ?? ""} expected ${expected} ± ${tol}, got ${actual}`);
+
+const START = "2026-07-15";
+const weather = (p = DEMO_WEATHER) => buildScenarioWeather(p, START, "demo");
+const run = (overrides: Partial<SimulationInputs> = {}, w = weather()) =>
+  runSimulation({ ...DEFAULT_INPUTS, weatherMode: "custom", ...overrides }, w);
+
+describe("FAO-56 evapotranspiration", () => {
+  it("reproduces Example 18 (Brussels, 6 July): ET0 ≈ 3.9 mm/day", () => {
+    const et0 = penmanMonteithET0({
+      tMax: 21.5,
+      tMin: 12.3,
+      u2: 2.078,
+      rs: 22.07,
+      ea: 1.409,
+      latitude: 50.8,
+      elevation: 100,
+      doy: 187,
+    });
+    near(et0, 3.9, 0.1);
+  });
+
+  it("reproduces Example 8: Ra at 20°S on 3 September ≈ 32.2 MJ/m²/day", () => {
+    near(extraterrestrialRadiation(-20, 246), 32.2, 0.2);
+  });
+
+  it("converts 10 m wind to 2 m (Example 14: 3.2 → 2.4 m/s)", () => {
+    near(windAt2m(3.2, 10), 2.4, 0.05);
+  });
+
+  it("gives higher ET0 for hotter, windier scenarios", () => {
+    const mild = weather({ temperature: 35, wind: 2, rainfall: 0, dust: "none" });
+    const hot = weather({ temperature: 48, wind: 7, rainfall: 0, dust: "none" });
+    assert.ok(hot.days[0].et0 > mild.days[0].et0);
+  });
+
+  it("dust lowers radiation-driven ET0", () => {
+    const clear = weather({ temperature: 40, wind: 3, rainfall: 0, dust: "none" });
+    const dusty = weather({ temperature: 40, wind: 3, rainfall: 0, dust: "severe" });
+    assert.ok(dusty.days[0].et0 < clear.days[0].et0);
+  });
+});
+
+describe("soil water balance", () => {
+  it("computes TAW and RAW from soil properties", () => {
+    near(totalAvailableWater(SOIL), 120, 1e-9);
+    near(readilyAvailableWater(SOIL), 60, 1e-9);
+  });
+
+  it("applies FAO-56 Ks", () => {
+    assert.equal(waterStressCoefficient(30, 120, 60), 1);
+    near(waterStressCoefficient(90, 120, 60), 0.5, 1e-9);
+    assert.equal(waterStressCoefficient(130, 120, 60), 0);
+  });
+
+  it("sends water above field capacity to deep percolation", () => {
+    assert.deepEqual(applyWaterInputs(20, 30), { depletion: 0, deepPercolation: 10 });
+    assert.deepEqual(applyWaterInputs(20, 5), { depletion: 15, deepPercolation: 0 });
+  });
+});
+
+describe("salinity", () => {
+  it("computes the FAO-29 leaching requirement", () => {
+    near(leachingRequirement(2.5, 4), 2.5 / 17.5, 1e-9);
+  });
+
+  it("conserves salt when there is no drainage", () => {
+    const wSat = saturationWater(SOIL);
+    const ece = updateSoilSalinity(4, 50, 2.5, 0, SOIL);
+    near(ece * wSat, 4 * wSat + 50 * 2.5, 1e-6);
+  });
+
+  it("removes salt with drainage", () => {
+    assert.ok(updateSoilSalinity(5, 50, 2.5, 30, SOIL) < updateSoilSalinity(5, 50, 2.5, 0, SOIL));
+  });
+});
+
+describe("allocation", () => {
+  it("weighted water filling respects both budget and requests", () => {
+    const out = weightedWaterFilling(
+      [
+        { id: "A", amount: 10, weight: 0.8 },
+        { id: "B", amount: 2, weight: 0.5 },
+        { id: "C", amount: 0, weight: 0.2 },
+      ],
+      8,
+    );
+    near(out.A + out.B + out.C, 8, 1e-9);
+    assert.ok(out.B <= 2 + 1e-9);
+    assert.equal(out.C, 0);
+  });
+
+  it("never allocates more than the reservoir holds", () => {
+    const snaps = BASINS.map((b) => ({
+      id: b.id,
+      area: b.area,
+      depletion: 100,
+      ece: 6,
+      etc: 9,
+      effectiveRain: 0,
+      taw: 120,
+      raw: 60,
+      wSat: saturationWater(SOIL),
+      ecw: 3,
+    }));
+    const d = allocatePulse(snaps, DEFAULT_CONFIG.crop, 0.2, 5, 0, 50);
+    assert.ok(d.allocations.A + d.allocations.B + d.allocations.C <= 5 + 1e-9);
+    assert.ok(d.rationed);
+    assert.ok(d.leachingWithheld, "no leaching when water is short");
+  });
+
+  it("gives the driest basin the largest share under scarcity", () => {
+    const r = run({ availableWater: 40 });
+    const day1 = r.pulse.basins.map((b) => b.days[0].irrigationVolume);
+    assert.ok(day1[0] >= day1[1] && day1[0] >= day1[2]);
+  });
+});
+
+describe("rain-aware leaching", () => {
+  it("forecasts drainage from rain exceeding the depletion built up before it", () => {
+    near(forecastRainDrainage([5, 5, 5], [0, 0, 20], 0), 10, 1e-9);
+    near(forecastRainDrainage([5, 5, 5], [0, 0, 20], 0, 30), 0, 1e-9);
+  });
+
+  it("defers leaching to forecast rain instead of drawing on the reservoir", () => {
+    const snaps = BASINS.map((b) => ({
+      id: b.id,
+      area: b.area,
+      depletion: 40,
+      ece: 6,
+      etc: 5,
+      effectiveRain: 0,
+      taw: 120,
+      raw: 60,
+      wSat: saturationWater(SOIL),
+      ecw: 2.5,
+    }));
+    const rain = { etc: [5, 5, 5, 5], effectiveRain: [0, 0, 60, 0], today: 0 };
+    const d = allocatePulse(snaps, DEFAULT_CONFIG.crop, 0.15, 500, 0, 0, true, rain);
+    assert.deepEqual([...d.leachingByRain].sort(), ["A", "B", "C"]);
+    assert.equal(d.leaching.A + d.leaching.B + d.leaching.C, 0);
+    assert.equal(d.leachingWithheld, false);
+  });
+
+  it("only credits rain for basins whose salinity it lowers after the rain arrives", () => {
+    const preset = SCENARIO_PRESETS.find((p) => p.id === "rain")!;
+    const inputs = preset.apply(DEFAULT_INPUTS);
+    const r = runSimulation(inputs, buildScenarioWeather(inputs.customWeather, START, "custom"));
+    const rec = r.recommendations.find((x) => x.id === "leaching-rain");
+    assert.ok(rec, "expected a rain-leaching recommendation");
+    const firstRain = r.pulse.basins[0].days.find((d) => d.effectiveRain > 0)!.day;
+    for (const b of r.pulse.basins) {
+      if (!rec.action.includes(` ${b.id}`) && !rec.action.includes(`و${b.id}`)) continue;
+      const beforeRain = firstRain > 1 ? b.days[firstRain - 2].eceEnd : b.initial.ece;
+      assert.ok(b.days[b.days.length - 1].eceEnd < beforeRain, `rain should lower basin ${b.id} salinity`);
+    }
+  });
+});
+
+describe("simulation", () => {
+  it("is deterministic", () => {
+    assert.deepEqual(run(), run());
+  });
+
+  it("never uses more water than has been delivered, day by day", () => {
+    for (const preset of SCENARIO_PRESETS) {
+      const inputs = preset.apply({ ...DEFAULT_INPUTS, weatherMode: "custom" });
+      const r = runSimulation(inputs, buildScenarioWeather(inputs.customWeather, START, "custom"));
+      for (const s of [r.pulse, r.traditional]) {
+        let delivered = 0;
+        let used = 0;
+        r.timeline.forEach((t, i) => {
+          delivered += t.delivered;
+          used += s.dailyUse[i];
+          assert.ok(used <= delivered + 1e-6, `${preset.id}/${s.strategy} day ${i + 1}`);
+        });
+        assert.ok(s.totalUsed <= inputs.availableWater + 1e-6);
+      }
+    }
+  });
+
+  it("keeps depletion within [0, TAW]", () => {
+    const r = run({ availableWater: 20 }, weather({ temperature: 50, wind: 12, rainfall: 0, dust: "none" }));
+    for (const b of [...r.pulse.basins, ...r.traditional.basins]) {
+      for (const d of b.days) {
+        assert.ok(d.depletionEnd >= 0 && d.depletionEnd <= b.taw + 1e-9);
+      }
+    }
+  });
+
+  it("uses less water than the fixed-share baseline when supply is ample", () => {
+    const r = run();
+    assert.ok(r.pulse.totalUsed < r.traditional.totalUsed);
+  });
+
+  it("stops deliveries during an outage", () => {
+    const s = deliverySchedule({ ...DEFAULT_INPUTS, outageFromDay: 4 }, 7);
+    assert.deepEqual(s.actual.slice(3), [0, 0, 0, 0]);
+    near(s.actual.reduce((a, b) => a + b, 0), (120 / 7) * 3, 1e-9);
+  });
+
+  it("shifts a delayed turn into day 2 without losing water", () => {
+    const s = deliverySchedule({ ...DEFAULT_INPUTS, delayHours: 6 }, 7);
+    near(s.actual.reduce((a, b) => a + b, 0), 120, 1e-9);
+    near(s.actual[0], (120 / 7) * 0.75, 1e-9);
+  });
+
+  it("does not recommend leaching when soil salinity is below the crop threshold", () => {
+    const lowSalt = { ...DEFAULT_CONFIG, basins: BASINS.map((b) => ({ ...b, initialEce: 2 })) };
+    const r = runSimulation({ ...DEFAULT_INPUTS, ecw: 1 }, weather(), lowSalt);
+    assert.ok(!r.recommendations.some((x) => x.kind === "leaching"));
+  });
+
+  it("rejects weather series that are too short", () => {
+    const w = weather();
+    assert.throws(() => runSimulation(DEFAULT_INPUTS, { ...w, days: w.days.slice(0, 3) }));
+  });
+});
+
+describe("input validation", () => {
+  it("clamps out-of-range and non-numeric inputs", () => {
+    const s = sanitizeInputs({ availableWater: 9999, ecw: Number.NaN, delayHours: -3, kc: 5 } as Partial<SimulationInputs>);
+    assert.equal(s.availableWater, 200);
+    assert.equal(s.ecw, DEFAULT_INPUTS.ecw);
+    assert.equal(s.delayHours, 0);
+    assert.equal(s.kc, 1.2);
+  });
+});
