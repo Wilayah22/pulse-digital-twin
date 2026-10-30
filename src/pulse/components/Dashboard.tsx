@@ -44,7 +44,8 @@ function Charts() {
         />
         <div className="px-4 pt-3">{body(result && <AllocationDonut result={result} />)}</div>
       </Card>
-      <Card className="pb-3 xl:col-span-1">
+      <div className="grid grid-cols-1 gap-5 xl:col-span-3 xl:grid-cols-2">
+      <Card className="pb-3">
         <CardHeader
           title={t("الرطوبة قبل وبعد الري", "Moisture before and after irrigation")}
           icon={<ChartLine size={18} />}
@@ -54,7 +55,7 @@ function Charts() {
           {body(result && <MoistureChart result={result} strategy={strategy} selectedDay={selectedDay} onSelectDay={setSelectedDay} />)}
         </div>
       </Card>
-      <Card className="pb-3 xl:col-span-2">
+      <Card className="pb-3">
         <CardHeader
           title={t("تطور ملوحة التربة", "Soil salinity trend")}
           icon={<FlaskConical size={18} />}
@@ -64,6 +65,7 @@ function Charts() {
           {body(result && <SalinityChart result={result} strategy={strategy} selectedDay={selectedDay} onSelectDay={setSelectedDay} />)}
         </div>
       </Card>
+      </div>
     </div>
   );
 }

@@ -173,7 +173,7 @@ export function ReportDocument({ result, activePreset }: { result: SimulationRes
 
       <Section title={t("3. استهلاك المياه اليومي", "3. Daily water use")}>
         <div dir="ltr" className="w-full">
-          <WaterConsumptionChart result={result} selectedDay={-1} onSelectDay={noop} />
+          <WaterConsumptionChart result={result} selectedDay={-1} onSelectDay={noop} heightClass="h-[260px]" />
         </div>
       </Section>
 

@@ -4,8 +4,12 @@ import { useLang } from "../../i18n/LanguageProvider";
 import type { MouseHandlerDataParam } from "recharts";
 import { fmt } from "../ui";
 
-export const AXIS = { fontSize: 11, fill: "#718096" } as const;
-export const GRID = "#ECEAE3";
+export const AXIS = { fontSize: 11, fill: "#8A96A3" } as const;
+export const GRID = "#EDEEE9";
+/** Horizontal dashed gridlines only, the house style for every chart. */
+export const GRID_PROPS = { vertical: false, stroke: GRID, strokeDasharray: "4 4" } as const;
+/** Soft band marking the day selected in the digital twin. */
+export const SELECTED_BAND = { fill: "#2699C7", fillOpacity: 0.07, strokeOpacity: 0 } as const;
 
 export interface TooltipRow {
   label: string;
@@ -55,5 +59,61 @@ export function LegendItem({ color, label, dashed }: { color: string; label: str
       />
       {label}
     </span>
+  );
+}
+
+/** Clickable legend chip that shows or hides a series. */
+export function LegendToggle({
+  color,
+  label,
+  active,
+  onToggle,
+  dashed,
+}: {
+  color: string;
+  label: string;
+  active: boolean;
+  onToggle: () => void;
+  dashed?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={active}
+      className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all ${
+        active ? "border-pn-line bg-white text-pn-ink shadow-sm" : "border-transparent bg-pn-bg text-pn-muted/70 line-through"
+      }`}
+    >
+      <span
+        className="inline-block w-3"
+        style={dashed ? { borderTop: `2px dashed ${color}` } : { height: 8, borderRadius: 999, backgroundColor: active ? color : "#CBD2D9" }}
+      />
+      {label}
+    </button>
+  );
+}
+
+/** Compact headline figure shown above a chart. */
+export function StatChip({ label, value, tone = "neutral" }: { label: string; value: string; tone?: "neutral" | "good" | "bad" }) {
+  const color = tone === "good" ? "#176B50" : tone === "bad" ? "#DC5B52" : "#102A38";
+  const bg = tone === "good" ? "#E6F4EC" : tone === "bad" ? "#FBE7E5" : "#F2F3EF";
+  return (
+    <span className="flex items-baseline gap-1.5 rounded-lg px-2.5 py-1" style={{ backgroundColor: bg }}>
+      <span className="text-[10px] text-pn-muted">{label}</span>
+      <span className="num text-[13px] font-bold" style={{ color }}>
+        {value}
+      </span>
+    </span>
+  );
+}
+
+/** Vertical gradient definition for area and bar fills. */
+export function Gradient({ id, color, from = 0.35, to = 0.02 }: { id: string; color: string; from?: number; to?: number }) {
+  return (
+    <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stopColor={color} stopOpacity={from} />
+      <stop offset="100%" stopColor={color} stopOpacity={to} />
+    </linearGradient>
   );
 }
