@@ -1,5 +1,6 @@
 "use client";
 
+import { useLang } from "../../i18n/LanguageProvider";
 import { TriangleAlert } from "lucide-react";
 import { CartesianGrid, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { CROP, type BasinId, type SimulationResult } from "../../engine";
@@ -19,12 +20,14 @@ export function SalinityChart({
   selectedDay: number;
   onSelectDay: (d: number) => void;
 }) {
+  const { t: tr } = useLang();
+  const dayName = (d: number) => tr(`اليوم ${d}`, `Day ${d}`);
   const s = strategy === "pulse" ? result.pulse : result.traditional;
   const threshold = CROP.eceThreshold;
   const data = [
-    { name: "البداية", ...Object.fromEntries(s.basins.map((b) => [b.id, b.initial.ece])) },
+    { name: tr("البداية", "Start"), ...Object.fromEntries(s.basins.map((b) => [b.id, b.initial.ece])) },
     ...result.timeline.map((t, i) => ({
-      name: `اليوم ${t.day}`,
+      name: dayName(t.day),
       ...Object.fromEntries(s.basins.map((b) => [b.id, b.days[i].eceEnd])),
     })),
   ] as Record<string, number | string>[];
@@ -36,12 +39,12 @@ export function SalinityChart({
     <div>
       <div className="mb-1 flex flex-wrap items-center gap-x-4 gap-y-1 px-1">
         {IDS.map((id) => (
-          <LegendItem key={id} color={BASIN_COLORS[id]} label={`الحوض ${id}`} />
+          <LegendItem key={id} color={BASIN_COLORS[id]} label={tr(`الحوض ${id}`, `Basin ${id}`)} />
         ))}
-        <LegendItem color={COLORS.danger} label={`حد تحمّل النخيل ${threshold} dS/m`} dashed />
+        <LegendItem color={COLORS.danger} label={tr(`حد تحمّل النخيل ${threshold} dS/m`, `Date-palm tolerance ${threshold} dS/m`)} dashed />
         {above.length > 0 && (
           <span className="ms-auto flex items-center gap-1 rounded-full bg-[#FBE7E5] px-2 py-0.5 text-[11px] font-semibold text-pn-danger">
-            <TriangleAlert size={12} /> فوق الحد: {above.map((b) => b.id).join("، ")}
+            <TriangleAlert size={12} /> {tr("فوق الحد:", "Above limit:")} {above.map((b) => b.id).join(tr("، ", ", "))}
           </span>
         )}
       </div>
@@ -61,14 +64,14 @@ export function SalinityChart({
             <XAxis dataKey="name" tick={AXIS} axisLine={false} tickLine={false} />
             <YAxis domain={[0, yMax]} tick={AXIS} axisLine={false} tickLine={false} />
             <ReferenceLine y={threshold} stroke={COLORS.danger} strokeDasharray="6 4" strokeWidth={1.5} />
-            <ReferenceLine x={`اليوم ${selectedDay}`} stroke="#2699C7" strokeOpacity={0.35} strokeWidth={8} />
+            <ReferenceLine x={dayName(selectedDay)} stroke="#2699C7" strokeOpacity={0.35} strokeWidth={8} />
             <Tooltip
               content={({ active, payload, label }) =>
                 active && payload?.length ? (
                   <TooltipCard
                     title={`${label} · ECe`}
-                    rows={IDS.map((id) => ({ label: `الحوض ${id}`, value: Number(payload[0].payload[id]), unit: "dS/m", color: BASIN_COLORS[id], digits: 2 }))}
-                    footer={`ملوحة مياه الري ECw = ${fmt(result.inputs.ecw)} dS/m`}
+                    rows={IDS.map((id) => ({ label: tr(`الحوض ${id}`, `Basin ${id}`), value: Number(payload[0].payload[id]), unit: "dS/m", color: BASIN_COLORS[id], digits: 2 }))}
+                    footer={`${tr("ملوحة مياه الري", "Irrigation water")} ECw = ${fmt(result.inputs.ecw)} dS/m`}
                   />
                 ) : null
               }

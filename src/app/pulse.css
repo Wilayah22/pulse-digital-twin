@@ -35,6 +35,9 @@
   background: linear-gradient(to left, var(--accent, #38a169) var(--fill, 50%), #e5e7e2 var(--fill, 50%));
   cursor: pointer;
 }
+[dir="ltr"] .pulse-range {
+  background: linear-gradient(to right, var(--accent, #38a169) var(--fill, 50%), #e5e7e2 var(--fill, 50%));
+}
 .pulse-range::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 16px;

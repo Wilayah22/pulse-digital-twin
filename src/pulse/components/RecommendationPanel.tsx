@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import type { Recommendation, SimulationResult } from "../engine";
 import { useSimulation } from "../state/SimulationProvider";
+import { useLang } from "../i18n/LanguageProvider";
 import { Card, CardHeader, Skeleton } from "./ui";
 
 const KIND_ICON: Record<Recommendation["kind"], LucideIcon> = {
@@ -86,12 +87,13 @@ function downloadReport(r: SimulationResult) {
 
 export function RecommendationPanel() {
   const { result } = useSimulation();
+  const { t } = useLang();
   return (
     <Card id="report" className="pb-4">
       <CardHeader
-        title="التوصية الذكية"
+        title={t("التوصية الذكية", "Smart recommendation")}
         icon={<Lightbulb size={18} />}
-        subtitle="مستخرجة من نتائج المحاكاة المحسوبة — لا توصيات ثابتة"
+        subtitle={t("مستخرجة من نتائج المحاكاة المحسوبة — لا توصيات ثابتة", "Derived from computed simulation results, never canned advice")}
         action={
           result && (
             <button
@@ -99,7 +101,7 @@ export function RecommendationPanel() {
               onClick={() => downloadReport(result)}
               className="flex items-center gap-1.5 rounded-lg border border-pn-line px-2.5 py-1.5 text-[11px] font-semibold text-pn-navy hover:border-pn-forest/40"
             >
-              <Download size={13} /> تصدير التقرير CSV
+              <Download size={13} /> {t("تصدير CSV", "Export CSV")}
             </button>
           )
         }
@@ -108,7 +110,7 @@ export function RecommendationPanel() {
         {!result
           ? Array.from({ length: 3 }, (_, i) => <Skeleton key={i} className="h-20" />)
           : result.recommendations.length === 0
-            ? <p className="py-6 text-center text-sm text-pn-muted">لا توجد إجراءات مطلوبة في هذا السيناريو.</p>
+            ? <p className="py-6 text-center text-sm text-pn-muted">{t("لا توجد إجراءات مطلوبة في هذا السيناريو.", "No action needed in this scenario.")}</p>
             : result.recommendations.map((rec, i) => {
                 const Icon = KIND_ICON[rec.kind];
                 const sev = SEVERITY[rec.severity];
@@ -127,7 +129,7 @@ export function RecommendationPanel() {
                       <div className="min-w-0 flex-1">
                         <h3 className={`text-sm font-bold ${i === 0 ? "text-white" : "text-pn-navy"}`}>{rec.action}</h3>
                         <p className={`mt-0.5 text-xs leading-5 ${i === 0 ? "text-white/80" : "text-pn-ink/80"}`}>
-                          <span className={`font-semibold ${i === 0 ? "text-pn-gold" : ""}`}>السبب: </span>
+                          <span className={`font-semibold ${i === 0 ? "text-pn-gold" : ""}`}>{t("السبب: ", "Why: ")}</span>
                           {rec.reason}
                         </p>
                         {(rec.allocation || rec.impact) && (
@@ -156,19 +158,28 @@ export function RecommendationPanel() {
 
 export function DecisionFactors() {
   const { result, applied } = useSimulation();
+  const { t } = useLang();
   const weatherLabel =
-    result?.weather.source === "open-meteo" ? "Open-Meteo (حي)" : result?.weather.source === "custom" ? "سيناريو مخصص" : "سيناريو تجريبي";
+    result?.weather.source === "open-meteo"
+      ? t("Open-Meteo (حي)", "Open-Meteo (live)")
+      : result?.weather.source === "custom"
+        ? t("سيناريو مخصص", "custom scenario")
+        : t("سيناريو تجريبي", "demo scenario");
   const factors = [
-    { label: "استنزاف ماء التربة لكل حوض", weight: "65%" },
-    { label: "الطلب المائي ETc = Kc × ET0", weight: "15%" },
-    { label: "ملوحة التربة ECe مقابل حد التحمّل", weight: "20%" },
-    { label: `المياه المتاحة في الخزان (${applied.availableWater} م³)`, weight: "قيد" },
-    { label: `توقعات الطقس 7 أيام — ${weatherLabel}`, weight: "تنبؤ" },
-    { label: `تأخر المناوبة (${applied.delayHours} ساعة) وانقطاع الإمداد`, weight: "قيد" },
+    { label: t("استنزاف ماء التربة لكل حوض", "Soil water depletion per basin"), weight: "65%" },
+    { label: t("الطلب المائي ETc = Kc × ET0", "Crop demand ETc = Kc × ET0"), weight: "15%" },
+    { label: t("ملوحة التربة ECe مقابل حد التحمّل", "Soil salinity ECe vs tolerance"), weight: "20%" },
+    { label: t(`المياه المتاحة في الخزان (${applied.availableWater} م³)`, `Water available in the reservoir (${applied.availableWater} m³)`), weight: t("قيد", "Limit") },
+    { label: t(`توقعات الطقس 7 أيام — ${weatherLabel}`, `7-day weather forecast: ${weatherLabel}`), weight: t("تنبؤ", "Forecast") },
+    { label: t(`تأخر المناوبة (${applied.delayHours} ساعة) وانقطاع الإمداد`, `Turn delay (${applied.delayHours} h) and supply outages`), weight: t("قيد", "Limit") },
   ];
   return (
     <Card className="pb-4">
-      <CardHeader title="لماذا هذا القرار؟" icon={<BrainCircuit size={18} />} subtitle="العوامل التي يزنها محرك التوزيع يومياً" />
+      <CardHeader
+        title={t("لماذا هذا القرار؟", "Why this decision?")}
+        icon={<BrainCircuit size={18} />}
+        subtitle={t("العوامل التي يزنها محرك التوزيع يومياً", "Factors the allocation engine weighs every day")}
+      />
       <ul className="mt-3 space-y-2 px-5">
         {factors.map((f) => (
           <li key={f.label} className="flex items-center justify-between gap-2 text-xs text-pn-ink">

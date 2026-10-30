@@ -2,6 +2,7 @@
 
 import { Maximize2, Minimize2 } from "lucide-react";
 import { useSyncExternalStore } from "react";
+import { useLang } from "../../i18n/LanguageProvider";
 
 const subscribe = (cb: () => void) => {
   document.addEventListener("fullscreenchange", cb);
@@ -20,7 +21,9 @@ export function FullscreenButton({ targetId }: { targetId: string }) {
     () => document.fullscreenEnabled,
     () => false,
   );
+  const { t } = useLang();
   if (!supported) return null;
+  const label = isFull ? t("الخروج من ملء الشاشة", "Exit full screen") : t("ملء الشاشة", "Full screen");
   return (
     <button
       type="button"
@@ -29,8 +32,8 @@ export function FullscreenButton({ targetId }: { targetId: string }) {
         else void document.getElementById(targetId)?.requestFullscreen();
       }}
       className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-xl bg-white/85 text-pn-navy shadow-sm ring-1 ring-black/5 backdrop-blur hover:bg-white"
-      aria-label={isFull ? "الخروج من ملء الشاشة" : "ملء الشاشة"}
-      title={isFull ? "الخروج من ملء الشاشة" : "ملء الشاشة"}
+      aria-label={label}
+      title={label}
     >
       {isFull ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
     </button>

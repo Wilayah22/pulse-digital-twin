@@ -2,6 +2,7 @@
 
 import { CloudRain, CloudSun, Droplets, FlaskConical, PlugZap, Timer, Wind, type LucideIcon } from "lucide-react";
 import { SCENARIO_PRESETS } from "../engine";
+import { useLang } from "../i18n/LanguageProvider";
 import { useSimulation } from "../state/SimulationProvider";
 
 const ICONS: Record<string, LucideIcon> = {
@@ -16,11 +17,12 @@ const ICONS: Record<string, LucideIcon> = {
 
 export function ScenarioPresets() {
   const { applyPreset, activePreset } = useSimulation();
+  const { t } = useLang();
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-sm font-bold text-pn-navy">سيناريوهات جاهزة</h3>
-        <span className="text-[11px] text-pn-muted">اختر سيناريو لترى كيف يغيّر Pulse قراراته فوراً</span>
+        <h3 className="text-sm font-bold text-pn-navy">{t("سيناريوهات جاهزة", "Scenario presets")}</h3>
+        <span className="text-[11px] text-pn-muted">{t("اختر سيناريو لترى كيف يغيّر Pulse قراراته فوراً", "Pick a scenario to see Pulse change its decisions instantly")}</span>
       </div>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {SCENARIO_PRESETS.map((p) => {
@@ -44,8 +46,8 @@ export function ScenarioPresets() {
                 <Icon size={16} />
               </span>
               <span className="min-w-0">
-                <span className="block truncate text-xs font-bold">{p.name}</span>
-                <span className={`block truncate text-[10px] ${on ? "text-white/75" : "text-pn-muted"}`}>{p.description}</span>
+                <span className="block truncate text-xs font-bold">{t(p.name, p.nameEn)}</span>
+                <span className={`block truncate text-[10px] ${on ? "text-white/75" : "text-pn-muted"}`}>{t(p.description, p.descriptionEn)}</span>
               </span>
             </button>
           );

@@ -1,5 +1,6 @@
 "use client";
 
+import { useLang } from "../../i18n/LanguageProvider";
 import type { MouseHandlerDataParam } from "recharts";
 import { fmt } from "../ui";
 
@@ -16,8 +17,9 @@ export interface TooltipRow {
 }
 
 export function TooltipCard({ title, rows, footer }: { title: string; rows: TooltipRow[]; footer?: React.ReactNode }) {
+  const { dir } = useLang();
   return (
-    <div dir="rtl" className="min-w-44 rounded-xl bg-pn-navy px-3 py-2 text-xs text-white shadow-xl">
+    <div dir={dir} className="min-w-44 rounded-xl bg-pn-navy px-3 py-2 text-xs text-white shadow-xl">
       <div className="mb-1 font-semibold">{title}</div>
       {rows.map((r) => (
         <div key={r.label} className="flex items-center justify-between gap-4 py-0.5">

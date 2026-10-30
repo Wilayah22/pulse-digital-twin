@@ -38,6 +38,7 @@ export interface BasinDayView {
   predictedDemand: number; // m³, rest of the period incl. today
   totalAllocated: number; // m³ over the period
   lastIrrigation: string;
+  lastIrrigationEn: string;
   stressDays: number;
 }
 
@@ -52,9 +53,10 @@ export function basinDayViews(result: SimulationResult, strategy: "pulse" | "tra
     const d = b.days[idx];
     const cfg = BASINS.find((x) => x.id === b.id);
     const previous = b.days.slice(0, idx).filter((x) => x.irrigationVolume > 1e-6);
-    const lastIrrigation = previous.length
-      ? `اليوم ${previous[previous.length - 1].day}`
-      : `قبل ${(cfg?.lastIrrigationDaysAgo ?? 0) + idx} ${(cfg?.lastIrrigationDaysAgo ?? 0) + idx > 2 ? "أيام" : "يوم"}`;
+    const daysAgo = (cfg?.lastIrrigationDaysAgo ?? 0) + idx;
+    const lastDay = previous.length ? previous[previous.length - 1].day : null;
+    const lastIrrigation = lastDay ? `اليوم ${lastDay}` : `قبل ${daysAgo} ${daysAgo > 2 ? "أيام" : "يوم"}`;
+    const lastIrrigationEn = lastDay ? `Day ${lastDay}` : `${daysAgo} day${daysAgo === 1 ? "" : "s"} ago`;
     const predictedDemand = b.days
       .slice(idx)
       .reduce((a, x) => a + depthToVolume(Math.max(0, x.etc - x.effectiveRain), b.area) / APPLICATION_EFFICIENCY, 0);
@@ -82,6 +84,7 @@ export function basinDayViews(result: SimulationResult, strategy: "pulse" | "tra
       predictedDemand,
       totalAllocated: b.totalIrrigation,
       lastIrrigation,
+      lastIrrigationEn,
       stressDays: b.stressDays,
     };
   });

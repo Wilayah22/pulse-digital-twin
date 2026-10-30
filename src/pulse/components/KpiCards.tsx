@@ -2,6 +2,7 @@
 
 import { ArrowDown, ArrowUp, Droplets, FlaskConical, Leaf, Sprout } from "lucide-react";
 import { percentChange, waterSavingPercent } from "../engine";
+import { useLang } from "../i18n/LanguageProvider";
 import { useSimulation } from "../state/SimulationProvider";
 import { AnimatedNumber, InfoTip, Skeleton, fmt } from "./ui";
 
@@ -61,6 +62,7 @@ function KpiCard({ k }: { k: Kpi }) {
 
 export function KpiCards() {
   const { result } = useSimulation();
+  const { t: tr } = useLang();
   if (!result) {
     return (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-4">
@@ -75,23 +77,26 @@ export function KpiCards() {
   const kpis: Kpi[] = [
     {
       key: "used",
-      title: "إجمالي المياه المستخدمة",
-      tip: "مجموع المياه التي وزّعها Pulse على الأحواض الثلاثة خلال 7 أيام.",
+      title: tr("إجمالي المياه المستخدمة", "Total water used"),
+      tip: tr("مجموع المياه التي وزّعها Pulse على الأحواض الثلاثة خلال 7 أيام.", "Water Pulse delivered to the three basins over 7 days."),
       value: p.totalUsed,
       digits: 1,
-      unit: "م³",
+      unit: tr("م³", "m³"),
       icon: <Droplets size={22} />,
       iconBg: "#E3F3FA",
       iconColor: "#2699C7",
       delta: percentChange(p.totalUsed, t.totalUsed),
       deltaUnit: "%",
       higherIsBetter: false,
-      note: `مقارنة بالري التقليدي (${fmt(t.totalUsed)} م³)`,
+      note: tr(`مقارنة بالري التقليدي (${fmt(t.totalUsed)} م³)`, `vs traditional irrigation (${fmt(t.totalUsed)} m³)`),
     },
     {
       key: "saving",
-      title: "نسبة توفير المياه",
-      tip: "(استهلاك التقليدي − استهلاك Pulse) ÷ استهلاك التقليدي، تحت نفس الطقس ونفس كمية المياه المتاحة.",
+      title: tr("نسبة توفير المياه", "Water saving"),
+      tip: tr(
+        "(استهلاك التقليدي − استهلاك Pulse) ÷ استهلاك التقليدي، تحت نفس الطقس ونفس كمية المياه المتاحة.",
+        "(Traditional use − Pulse use) ÷ traditional use, under the same weather and the same available water.",
+      ),
       value: waterSavingPercent(result),
       digits: 1,
       unit: "%",
@@ -99,14 +104,17 @@ export function KpiCards() {
       iconBg: "#E6F4EC",
       iconColor: "#38A169",
       delta: saved,
-      deltaUnit: " م³",
+      deltaUnit: tr(" م³", " m³"),
       higherIsBetter: true,
-      note: "من إجمالي استهلاك الري التقليدي",
+      note: tr("من إجمالي استهلاك الري التقليدي", "of traditional irrigation use"),
     },
     {
       key: "moisture",
-      title: "متوسط رطوبة التربة",
-      tip: "متوسط الماء المتاح في منطقة الجذور (% من TAW) لكل الأحواض والأيام. 100% = السعة الحقلية.",
+      title: tr("متوسط رطوبة التربة", "Average soil moisture"),
+      tip: tr(
+        "متوسط الماء المتاح في منطقة الجذور (% من TAW) لكل الأحواض والأيام. 100% = السعة الحقلية.",
+        "Mean root-zone available water (% of TAW) across basins and days. 100% = field capacity.",
+      ),
       value: p.avgMoisture,
       digits: 0,
       unit: "%",
@@ -114,14 +122,17 @@ export function KpiCards() {
       iconBg: "#E6F4EC",
       iconColor: "#176B50",
       delta: p.avgMoisture - t.avgMoisture,
-      deltaUnit: " نقطة",
+      deltaUnit: tr(" نقطة", " pts"),
       higherIsBetter: true,
-      note: `أيام إجهاد: ${p.stressDays} مقابل ${t.stressDays} تقليدياً`,
+      note: tr(`أيام إجهاد: ${p.stressDays} مقابل ${t.stressDays} تقليدياً`, `Stress days: ${p.stressDays} vs ${t.stressDays} traditional`),
     },
     {
       key: "ece",
-      title: "متوسط ملوحة التربة",
-      tip: "متوسط ECe المتوقع في نهاية الفترة. يتأثر بملوحة مياه الري (ECw) والتسرب العميق الذي يغسل الأملاح.",
+      title: tr("متوسط ملوحة التربة", "Average soil salinity"),
+      tip: tr(
+        "متوسط ECe المتوقع في نهاية الفترة. يتأثر بملوحة مياه الري (ECw) والتسرب العميق الذي يغسل الأملاح.",
+        "Mean predicted ECe at the end of the period, driven by irrigation-water salinity (ECw) and salt-flushing deep percolation.",
+      ),
       value: p.avgEce,
       digits: 2,
       unit: "dS/m",
@@ -131,7 +142,7 @@ export function KpiCards() {
       delta: percentChange(p.avgEce, t.avgEce),
       deltaUnit: "%",
       higherIsBetter: false,
-      note: `مقارنة بالري التقليدي (${fmt(t.avgEce, 2)})`,
+      note: tr(`مقارنة بالري التقليدي (${fmt(t.avgEce, 2)})`, `vs traditional (${fmt(t.avgEce, 2)})`),
     },
   ];
   return (

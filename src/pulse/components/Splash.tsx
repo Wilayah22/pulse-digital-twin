@@ -2,14 +2,16 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { useLang } from "../i18n/LanguageProvider";
 
 /** Brief brand intro on load. Fades out on its own; a click skips it. */
 export function Splash() {
   const [hidden, setHidden] = useState(false);
+  const { lang, dir } = useLang();
   if (hidden) return null;
   return (
     <div
-      dir="rtl"
+      dir={dir}
       onClick={() => setHidden(true)}
       onAnimationEnd={(e) => e.target === e.currentTarget && setHidden(true)}
       className="pulse-splash fixed inset-0 z-[60] flex cursor-pointer flex-col items-center justify-center bg-white"
@@ -20,11 +22,20 @@ export function Splash() {
         <Image src="/pulse/logo-wordmark.png" alt="Pulse" width={176} height={51} priority />
       </div>
       <p className="pulse-rise mt-6 max-w-md px-6 text-center text-base leading-8 text-pn-navy sm:text-lg" style={{ animationDelay: "0.25s" }}>
-        Pulse لا يقرر <span className="font-bold text-pn-forest">متى</span> نروي فحسب، بل <span className="font-bold text-pn-forest">كيف</span> نوزّع كل
-        قطرة متاحة بذكاء بين الأحواض.
+        {lang === "ar" ? (
+          <>
+            Pulse لا يقرر <span className="font-bold text-pn-forest">متى</span> نروي فحسب، بل <span className="font-bold text-pn-forest">كيف</span> نوزّع
+            كل قطرة متاحة بذكاء بين الأحواض.
+          </>
+        ) : (
+          <>
+            Pulse doesn&apos;t just decide <span className="font-bold text-pn-forest">when</span> to irrigate. It decides{" "}
+            <span className="font-bold text-pn-forest">how</span> to share every available drop across the basins.
+          </>
+        )}
       </p>
       <p className="pulse-rise mt-3 text-xs text-pn-muted" style={{ animationDelay: "0.45s" }}>
-        التوأم الرقمي · واحة الأحساء
+        {lang === "ar" ? "التوأم الرقمي · واحة الأحساء" : "Digital twin · Al-Ahsa Oasis"}
       </p>
     </div>
   );

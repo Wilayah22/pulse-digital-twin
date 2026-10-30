@@ -21,16 +21,16 @@ export const COLORS = {
 /** Identity colours for the three basins (charts, avatars). */
 export const BASIN_COLORS: Record<BasinId, string> = { A: "#176B50", B: "#D9A441", C: "#2699C7" };
 
-export const HEALTH_META: Record<BasinHealth, { label: string; color: string; soft: string }> = {
-  healthy: { label: "رطوبة جيدة", color: COLORS.green, soft: "#E6F4EC" },
-  moderate: { label: "إجهاد مائي متوسط", color: COLORS.warning, soft: "#FCF2DF" },
-  critical: { label: "إجهاد مائي حرج", color: COLORS.danger, soft: "#FBE7E5" },
+export const HEALTH_META: Record<BasinHealth, { label: string; labelEn: string; color: string; soft: string }> = {
+  healthy: { label: "رطوبة جيدة", labelEn: "Healthy moisture", color: COLORS.green, soft: "#E6F4EC" },
+  moderate: { label: "إجهاد مائي متوسط", labelEn: "Moderate water stress", color: COLORS.warning, soft: "#FCF2DF" },
+  critical: { label: "إجهاد مائي حرج", labelEn: "Critical water stress", color: COLORS.danger, soft: "#FBE7E5" },
 };
 
-export const PRIORITY_META: Record<PriorityLevel, { label: string; color: string; soft: string }> = {
-  critical: { label: "عالية", color: COLORS.danger, soft: "#FBE7E5" },
-  medium: { label: "متوسطة", color: COLORS.gold, soft: "#FAF0DA" },
-  low: { label: "منخفضة", color: COLORS.green, soft: "#E6F4EC" },
+export const PRIORITY_META: Record<PriorityLevel, { label: string; labelEn: string; color: string; soft: string }> = {
+  critical: { label: "عالية", labelEn: "High", color: COLORS.danger, soft: "#FBE7E5" },
+  medium: { label: "متوسطة", labelEn: "Medium", color: COLORS.gold, soft: "#FAF0DA" },
+  low: { label: "منخفضة", labelEn: "Low", color: COLORS.green, soft: "#E6F4EC" },
 };
 
 export function fmt(n: number, digits = 1): string {
@@ -95,7 +95,7 @@ export function InfoTip({ text, side = "bottom" }: { text: string; side?: "top" 
       </button>
       <span
         role="tooltip"
-        className={`pointer-events-none absolute start-1/2 z-40 hidden w-56 translate-x-1/2 rounded-lg bg-pn-navy px-3 py-2 text-[11px] leading-5 font-normal text-white shadow-lg group-focus-within:block group-hover:block ${
+        className={`pointer-events-none absolute left-1/2 z-40 hidden w-56 -translate-x-1/2 rounded-lg bg-pn-navy px-3 py-2 text-[11px] leading-5 font-normal text-white shadow-lg group-focus-within:block group-hover:block ${
           side === "top" ? "bottom-6" : "top-6"
         }`}
       >
@@ -159,15 +159,17 @@ export function Skeleton({ className = "" }: { className?: string }) {
   return <div className={`animate-pulse rounded-xl bg-pn-line/70 ${className}`} />;
 }
 
-const weekdayFmt = new Intl.DateTimeFormat("ar-SA-u-nu-latn-ca-gregory", { weekday: "long", timeZone: "UTC" });
-const shortDateFmt = new Intl.DateTimeFormat("ar-SA-u-nu-latn-ca-gregory", { day: "numeric", month: "short", timeZone: "UTC" });
+const AR_LOCALE = "ar-SA-u-nu-latn-ca-gregory";
 
-export function weekdayAr(iso: string): string {
+function formatDate(iso: string, locale: string, opts: Intl.DateTimeFormatOptions): string {
   const d = new Date(`${iso}T00:00:00Z`);
-  return Number.isNaN(d.getTime()) ? iso : weekdayFmt.format(d);
+  return Number.isNaN(d.getTime()) ? iso : new Intl.DateTimeFormat(locale, { ...opts, timeZone: "UTC" }).format(d);
 }
 
-export function shortDateAr(iso: string): string {
-  const d = new Date(`${iso}T00:00:00Z`);
-  return Number.isNaN(d.getTime()) ? iso : shortDateFmt.format(d);
+export function weekdayAr(iso: string, locale = AR_LOCALE): string {
+  return formatDate(iso, locale, { weekday: "long" });
+}
+
+export function shortDateAr(iso: string, locale = AR_LOCALE): string {
+  return formatDate(iso, locale, { day: "numeric", month: "short" });
 }

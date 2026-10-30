@@ -1,5 +1,6 @@
 "use client";
 
+import { useLang } from "../../i18n/LanguageProvider";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import type { SimulationResult } from "../../engine";
 import { BASIN_COLORS, fmt } from "../ui";
@@ -8,12 +9,13 @@ import { TooltipCard } from "./shared";
 const RESERVE_COLOR = "#D9DED9";
 
 export function AllocationDonut({ result }: { result: SimulationResult }) {
+  const { t, dir } = useLang();
   const total = result.inputs.availableWater;
   const slices = [
-    ...result.pulse.basins.map((b) => ({ key: b.id, name: `الحوض ${b.id}`, value: b.totalIrrigation, color: BASIN_COLORS[b.id] })),
+    ...result.pulse.basins.map((b) => ({ key: b.id, name: t(`الحوض ${b.id}`, `Basin ${b.id}`), value: b.totalIrrigation, color: BASIN_COLORS[b.id] })),
     {
       key: "reserve",
-      name: result.inputs.outageFromDay > 0 ? "غير مستخدم / لم يصل" : "متبقٍ في الخزان",
+      name: result.inputs.outageFromDay > 0 ? t("غير مستخدم / لم يصل", "Unused / not delivered") : t("متبقٍ في الخزان", "Left in reservoir"),
       value: Math.max(0, total - result.pulse.totalUsed),
       color: RESERVE_COLOR,
     },
@@ -46,9 +48,9 @@ export function AllocationDonut({ result }: { result: SimulationResult }) {
                     title={String(payload[0].name)}
                     rows={[
                       {
-                        label: "الحجم",
+                        label: t("الحجم", "Volume"),
                         value: Number(payload[0].value),
-                        unit: `م³ (${fmt((100 * Number(payload[0].value)) / total, 0)}%)`,
+                        unit: `${t("م³", "m³")} (${fmt((100 * Number(payload[0].value)) / total, 0)}%)`,
                         color: String(payload[0].payload.color),
                       },
                     ]}
@@ -58,9 +60,9 @@ export function AllocationDonut({ result }: { result: SimulationResult }) {
             />
           </PieChart>
         </ResponsiveContainer>
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center" dir="rtl">
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center" dir={dir}>
           <span className="num text-2xl font-bold text-pn-navy">{fmt(total, 0)}</span>
-          <span className="text-[11px] text-pn-muted">م³ إجمالي المتاح</span>
+          <span className="text-[11px] text-pn-muted">{t("م³ إجمالي المتاح", "m³ available")}</span>
         </div>
       </div>
       <ul className="w-full space-y-1.5 text-xs">
@@ -72,7 +74,7 @@ export function AllocationDonut({ result }: { result: SimulationResult }) {
             </span>
             <span className="flex items-baseline gap-2">
               <span className="num font-bold text-pn-navy">{fmt(s.value)}</span>
-              <span className="text-pn-muted">م³</span>
+              <span className="text-pn-muted">{t("م³", "m³")}</span>
               <span className="num w-10 text-end text-pn-muted">{fmt((100 * s.value) / total, 0)}%</span>
             </span>
           </li>

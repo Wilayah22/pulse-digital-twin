@@ -3,6 +3,7 @@ import type { BasinConfig, CropParams, SimulationInputs, SoilParams } from "./ty
 /** Al-Ahsa Oasis (Hofuf), approximate. */
 export const SITE = {
   nameAr: "واحة الأحساء",
+  nameShortEn: "Al-Ahsa Oasis",
   nameEn: "Al-Ahsa Oasis, Saudi Arabia",
   latitude: 25.38,
   longitude: 49.59,
@@ -72,6 +73,8 @@ export interface ScenarioPreset {
   id: string;
   name: string;
   description: string;
+  nameEn: string;
+  descriptionEn: string;
   apply: (current: SimulationInputs) => SimulationInputs;
 }
 
@@ -83,29 +86,44 @@ const base = (current: SimulationInputs): SimulationInputs => ({
 });
 
 export const SCENARIO_PRESETS: ScenarioPreset[] = [
-  { id: "normal", name: "الوضع الطبيعي", description: "120 م³ · ECw 2.5 · دون تأخير", apply: base },
+  {
+    id: "normal",
+    name: "الوضع الطبيعي",
+    description: "120 م³ · ECw 2.5 · دون تأخير",
+    nameEn: "Normal conditions",
+    descriptionEn: "120 m³ · ECw 2.5 · no delay",
+    apply: base,
+  },
   {
     id: "water-cut",
     name: "انخفاض المياه بنسبة 40%",
     description: "72 م³ بدلاً من 120 م³",
+    nameEn: "40% less water",
+    descriptionEn: "72 m³ instead of 120 m³",
     apply: (c) => ({ ...base(c), availableWater: Math.round(DEFAULT_INPUTS.availableWater * 0.6) }),
   },
   {
     id: "high-salinity",
     name: "ارتفاع الملوحة",
     description: "مياه ري بملوحة ECw 6 dS/m",
+    nameEn: "High salinity",
+    descriptionEn: "Irrigation water at ECw 6 dS/m",
     apply: (c) => ({ ...base(c), ecw: 6 }),
   },
   {
     id: "delay",
     name: "تأخر المناوبة 6 ساعات",
     description: "تصل المناوبة الأولى متأخرة 6 ساعات",
+    nameEn: "6-hour turn delay",
+    descriptionEn: "The first water turn arrives 6 h late",
     apply: (c) => ({ ...base(c), delayHours: 6 }),
   },
   {
     id: "heatwave",
     name: "موجة حر ورياح",
     description: "48°C · رياح 7 م/ث · غبار متوسط",
+    nameEn: "Heatwave and wind",
+    descriptionEn: "48°C · wind 7 m/s · moderate dust",
     apply: (c) => ({
       ...base(c),
       weatherMode: "custom",
@@ -116,6 +134,8 @@ export const SCENARIO_PRESETS: ScenarioPreset[] = [
     id: "rain",
     name: "أمطار غزيرة",
     description: "40 مم خلال الفترة · 30°C",
+    nameEn: "Heavy rain",
+    descriptionEn: "40 mm over the period · 30°C",
     apply: (c) => ({
       ...base(c),
       weatherMode: "custom",
@@ -126,6 +146,8 @@ export const SCENARIO_PRESETS: ScenarioPreset[] = [
     id: "outage",
     name: "انقطاع مفاجئ للمياه",
     description: "يتوقف الإمداد من اليوم 4",
+    nameEn: "Sudden water outage",
+    descriptionEn: "Supply stops from day 4",
     apply: (c) => ({ ...base(c), outageFromDay: 4 }),
   },
 ];

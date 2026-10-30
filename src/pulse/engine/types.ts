@@ -3,6 +3,9 @@
 
 export type BasinId = "A" | "B" | "C";
 
+/** Interface language for generated text (recommendations). */
+export type Lang = "ar" | "en";
+
 export interface SoilParams {
   /** Volumetric water content at field capacity (m³/m³). */
   thetaFC: number;

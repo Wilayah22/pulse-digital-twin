@@ -1,5 +1,6 @@
 "use client";
 
+import { useLang } from "../../i18n/LanguageProvider";
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { BasinId, SimulationResult } from "../../engine";
 import { BASIN_COLORS } from "../ui";
@@ -18,10 +19,12 @@ export function MoistureChart({
   selectedDay: number;
   onSelectDay: (d: number) => void;
 }) {
+  const { t: tr } = useLang();
+  const dayName = (d: number) => tr(`اليوم ${d}`, `Day ${d}`);
   const s = strategy === "pulse" ? result.pulse : result.traditional;
   const rawPct = 100 * (1 - s.basins[0].raw / s.basins[0].taw);
   const data = result.timeline.map((t, i) => {
-    const row: Record<string, number | string> = { name: `اليوم ${t.day}` };
+    const row: Record<string, number | string> = { name: dayName(t.day) };
     for (const b of s.basins) {
       row[`${b.id}_pre`] = b.days[i].moistureBefore;
       row[`${b.id}_post`] = b.days[i].moistureAfter;
@@ -32,10 +35,10 @@ export function MoistureChart({
     <div>
       <div className="mb-1 flex flex-wrap gap-x-4 gap-y-1 px-1">
         {IDS.map((id) => (
-          <LegendItem key={id} color={BASIN_COLORS[id]} label={`الحوض ${id}`} />
+          <LegendItem key={id} color={BASIN_COLORS[id]} label={tr(`الحوض ${id}`, `Basin ${id}`)} />
         ))}
-        <LegendItem color="#718096" label="بعد الري" />
-        <LegendItem color="#718096" label="قبل الري" dashed />
+        <LegendItem color="#718096" label={tr("بعد الري", "After irrigation")} />
+        <LegendItem color="#718096" label={tr("قبل الري", "Before irrigation")} dashed />
       </div>
       <div dir="ltr" className="h-[250px]">
         <ResponsiveContainer width="100%" height="100%">
@@ -55,17 +58,17 @@ export function MoistureChart({
               y={rawPct}
               stroke="#E6A23C"
               strokeDasharray="4 4"
-              label={{ value: "حد الإجهاد (RAW)", position: "insideBottomRight", fontSize: 10, fill: "#B7862F" }}
+              label={{ value: tr("حد الإجهاد (RAW)", "Stress threshold (RAW)"), position: "insideBottomRight", fontSize: 10, fill: "#B7862F" }}
             />
-            <ReferenceLine x={`اليوم ${selectedDay}`} stroke="#2699C7" strokeOpacity={0.35} strokeWidth={8} />
+            <ReferenceLine x={dayName(selectedDay)} stroke="#2699C7" strokeOpacity={0.35} strokeWidth={8} />
             <Tooltip
               content={({ active, payload, label }) =>
                 active && payload?.length ? (
                   <TooltipCard
                     title={String(label)}
                     rows={IDS.flatMap((id) => [
-                      { label: `${id} قبل`, value: Number(payload[0].payload[`${id}_pre`]), unit: "%", color: BASIN_COLORS[id], digits: 0, dashed: true },
-                      { label: `${id} بعد`, value: Number(payload[0].payload[`${id}_post`]), unit: "%", color: BASIN_COLORS[id], digits: 0 },
+                      { label: tr(`${id} قبل`, `${id} before`), value: Number(payload[0].payload[`${id}_pre`]), unit: "%", color: BASIN_COLORS[id], digits: 0, dashed: true },
+                      { label: tr(`${id} بعد`, `${id} after`), value: Number(payload[0].payload[`${id}_post`]), unit: "%", color: BASIN_COLORS[id], digits: 0 },
                     ])}
                   />
                 ) : null

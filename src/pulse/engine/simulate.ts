@@ -26,6 +26,7 @@ import type {
   DayInfo,
   SimulationInputs,
   SimulationResult,
+  Lang,
   SoilParams,
   StrategyResult,
   WeatherSeries,
@@ -290,6 +291,7 @@ export function runSimulation(
   rawInputs: Partial<SimulationInputs>,
   weather: WeatherSeries,
   config: SimulationConfig = DEFAULT_CONFIG,
+  lang: Lang = "ar",
 ): SimulationResult {
   const inputs = sanitizeInputs(rawInputs);
   const days = config.days;
@@ -326,7 +328,7 @@ export function runSimulation(
     leachingRequirement: lr,
     totalDelivered: schedule.actual.reduce((a, b) => a + b, 0),
   };
-  return { ...partial, recommendations: buildRecommendations(partial, { ...pulse.flags, noLeaching }, { ...config.crop, kc: inputs.kc }) };
+  return { ...partial, recommendations: buildRecommendations(partial, { ...pulse.flags, noLeaching }, { ...config.crop, kc: inputs.kc }, lang) };
 }
 
 /** Water saving of Pulse relative to the traditional baseline (%). Negative = Pulse used more. */

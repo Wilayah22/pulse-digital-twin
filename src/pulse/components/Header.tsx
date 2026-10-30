@@ -5,6 +5,7 @@ import Image from "next/image";
 import { SIMULATION_DAYS, SITE } from "../engine";
 import { useSimulation } from "../state/SimulationProvider";
 import { weatherInfo } from "../weather/codes";
+import { LanguageToggle, useLang } from "../i18n/LanguageProvider";
 import { StartTourButton } from "./PresentationTour";
 import { fmt, shortDateAr } from "./ui";
 
@@ -21,12 +22,13 @@ export function PulseLogo({ height = 60 }: { height?: number }) {
 
 function StatusPill() {
   const { running, dirty, result } = useSimulation();
+  const { t } = useLang();
   const state = !result ? "loading" : running ? "running" : dirty ? "dirty" : "ready";
   const meta = {
-    loading: { label: "جارٍ التحميل", color: "#E6A23C" },
-    running: { label: "جارٍ الحساب", color: "#2699C7" },
-    dirty: { label: "تغييرات غير مطبّقة", color: "#D9A441" },
-    ready: { label: "المحاكاة محدّثة", color: "#38A169" },
+    loading: { label: t("جارٍ التحميل", "Loading"), color: "#E6A23C" },
+    running: { label: t("جارٍ الحساب", "Calculating"), color: "#2699C7" },
+    dirty: { label: t("تغييرات غير مطبّقة", "Unapplied changes"), color: "#D9A441" },
+    ready: { label: t("المحاكاة محدّثة", "Simulation up to date"), color: "#38A169" },
   }[state];
   return (
     <span className="flex items-center gap-2 rounded-full bg-pn-bg px-3 py-1.5 text-xs text-pn-navy ring-1 ring-pn-line">
@@ -41,13 +43,20 @@ function StatusPill() {
 
 export function Header() {
   const { live, weather, applied } = useSimulation();
+  const { t, locale } = useLang();
   const liveCurrent = applied.weatherMode === "live" && live.status === "ready" ? live.data?.current : null;
   const day1 = weather?.days[0];
   const temp = liveCurrent?.temperature ?? day1?.tMax;
   const code = liveCurrent?.weatherCode ?? day1?.weatherCode ?? 0;
   const info = weatherInfo(code);
   const sourceLabel =
-    weather?.source === "open-meteo" ? "مباشر · Open-Meteo" : weather?.source === "custom" ? "سيناريو مخصص" : weather?.source === "demo" ? "بيانات تجريبية" : "…";
+    weather?.source === "open-meteo"
+      ? t("مباشر · Open-Meteo", "Live · Open-Meteo")
+      : weather?.source === "custom"
+        ? t("سيناريو مخصص", "Custom scenario")
+        : weather?.source === "demo"
+          ? t("بيانات تجريبية", "Demo data")
+          : "…";
   const days = weather?.days ?? [];
 
   return (
@@ -57,14 +66,14 @@ export function Header() {
       </div>
       <div className="hidden h-9 w-px bg-pn-line sm:block" />
       <div className="hidden leading-tight sm:block">
-        <h1 className="text-lg font-bold">التوأم الرقمي</h1>
-        <p className="latin text-xs text-pn-muted">Digital Twin Simulation</p>
+        <h1 className="text-lg font-bold">{t("التوأم الرقمي", "Digital Twin")}</h1>
+        <p className="latin text-xs text-pn-muted">{t("Digital Twin Simulation", "Smart irrigation simulation")}</p>
       </div>
 
       <div className="ms-auto flex items-center gap-3 lg:gap-5">
         <div className="hidden items-center gap-2 text-end lg:flex">
           <div className="leading-tight">
-            <div className="text-sm font-semibold">{SITE.nameAr}</div>
+            <div className="text-sm font-semibold">{t(SITE.nameAr, SITE.nameShortEn)}</div>
             <div className="latin text-[11px] text-pn-muted">
               {SITE.latitude}°N {SITE.longitude}°E
             </div>
@@ -77,7 +86,7 @@ export function Header() {
           <div className="leading-tight">
             <div className="num text-lg font-bold">{temp == null ? "—" : `${fmt(temp, 0)}°C`}</div>
             <div className="text-[11px] text-pn-muted">
-              {info.label} · {sourceLabel}
+              {t(info.label, info.labelEn)} · {sourceLabel}
             </div>
           </div>
         </div>
@@ -88,17 +97,18 @@ export function Header() {
         <div className="hidden items-center gap-2 xl:flex">
           <CalendarDays size={18} className="text-pn-muted" />
           <div className="leading-tight">
-            <div className="text-xs font-semibold">مدة المحاكاة {SIMULATION_DAYS} أيام</div>
+            <div className="text-xs font-semibold">{t(`مدة المحاكاة ${SIMULATION_DAYS} أيام`, `${SIMULATION_DAYS}-day simulation`)}</div>
             <div className="text-[11px] text-pn-muted">
-              {days.length ? `${shortDateAr(days[0].date)} – ${shortDateAr(days[days.length - 1].date)}` : "…"}
+              {days.length ? `${shortDateAr(days[0].date, locale)} – ${shortDateAr(days[days.length - 1].date, locale)}` : "…"}
             </div>
           </div>
         </div>
         <StartTourButton />
+        <LanguageToggle />
         <button
           type="button"
           className="flex h-10 w-10 items-center justify-center rounded-full bg-pn-bg text-pn-navy ring-1 ring-pn-line hover:bg-pn-line/60"
-          aria-label="الملف الشخصي"
+          aria-label={t("الملف الشخصي", "Profile")}
         >
           <CircleUserRound size={22} />
         </button>

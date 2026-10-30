@@ -3,6 +3,7 @@
 import { Clock, Droplet, Pause, PlugZap, Play, Radio, Thermometer, Wind } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SIMULATION_DAYS, type BasinId } from "../../engine";
+import { useLang } from "../../i18n/LanguageProvider";
 import { useSimulation } from "../../state/SimulationProvider";
 import { basinDayViews, reservoirOnDay, type BasinDayView } from "../../state/selectors";
 import { COLORS, HEALTH_META, Skeleton, fmt, shortDateAr } from "../ui";
@@ -72,6 +73,7 @@ function Sprout({ x, y, color, s = 1 }: { x: number; y: number; color: string; s
 function Basin({ v, selected, onSelect, salt }: { v: BasinDayView; selected: boolean; onSelect: () => void; salt: number }) {
   const cx = BASIN_X[v.id];
   const irrigating = v.irrigation > 1e-6;
+  const { t: tr } = useLang();
   const rim = `${cx - BACK_HW},${BACK_Y} ${cx + BACK_HW},${BACK_Y} ${cx + FRONT_HW},${FRONT_Y} ${cx - FRONT_HW},${FRONT_Y}`;
   const opening = `${cx - BACK_HW + 14},${BACK_Y + 9} ${cx + BACK_HW - 14},${BACK_Y + 9} ${cx + FRONT_HW - 16},${FRONT_Y - 11} ${cx - FRONT_HW + 16},${FRONT_Y - 11}`;
   const a = soilPoint(cx, -1, 0);
@@ -87,7 +89,7 @@ function Basin({ v, selected, onSelect, salt }: { v: BasinDayView; selected: boo
     <g
       role="button"
       tabIndex={0}
-      aria-label={`${v.name}: رطوبة ${fmt(v.moistureBefore, 0)}%`}
+      aria-label={tr(`الحوض ${v.id}: رطوبة ${fmt(v.moistureBefore, 0)}%`, `Basin ${v.id}: moisture ${fmt(v.moistureBefore, 0)}%`)}
       onClick={onSelect}
       onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onSelect()}
       className="cursor-pointer outline-none [&:focus-visible_.pn-outline]:opacity-100 [&:hover_.pn-outline]:opacity-70"
@@ -493,6 +495,7 @@ function SceneDefs() {
 export function DigitalTwinScene() {
   const { result, running, runId, selectedDay, setSelectedDay, selectedBasin, setSelectedBasin, strategy, setStrategy, applied } =
     useSimulation();
+  const { t: tr, dir, locale, arrow, lang } = useLang();
   const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
@@ -505,7 +508,7 @@ export function DigitalTwinScene() {
     return (
       <div className="relative overflow-hidden rounded-2xl">
         <Skeleton className="aspect-[1200/560] w-full" />
-        <p className="absolute inset-0 flex items-center justify-center text-sm text-pn-muted">جارٍ تحميل بيانات الطقس وتشغيل المحاكاة…</p>
+        <p className="absolute inset-0 flex items-center justify-center text-sm text-pn-muted">{tr("جارٍ تحميل بيانات الطقس وتشغيل المحاكاة…", "Loading weather data and running the simulation…")}</p>
       </div>
     );
   }
@@ -525,7 +528,7 @@ export function DigitalTwinScene() {
   return (
     <div>
       <div className="relative overflow-hidden rounded-2xl ring-1 ring-black/5" dir="ltr">
-        <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full select-none" preserveAspectRatio="xMidYMid slice" style={sceneVars} role="img" aria-label="التوأم الرقمي لثلاثة أحواض ري مع خزان مشترك">
+        <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full select-none" preserveAspectRatio="xMidYMid slice" style={sceneVars} role="img" aria-label={tr("التوأم الرقمي لثلاثة أحواض ري مع خزان مشترك", "Digital twin of three irrigation basins with a shared reservoir")}>
           <SceneDefs />
           <Backdrop a={atmo} />
           <HeatShimmer a={atmo} />
@@ -541,9 +544,11 @@ export function DigitalTwinScene() {
         </svg>
 
         {/* HTML overlays positioned in viewBox percentages */}
-        <div dir="rtl" className="pointer-events-none absolute end-3 top-3 rounded-2xl bg-white/80 px-4 py-2.5 text-start shadow-sm ring-1 ring-white/60 backdrop-blur-md sm:end-4 sm:top-4">
-          <h2 className="text-base font-bold text-pn-navy sm:text-xl">محاكاة توزيع المياه بين الأحواض</h2>
-          <p className="mt-0.5 hidden text-[11px] text-pn-deep/80 sm:block">اضغط على أي حوض لعرض تفاصيله · شاهد كيف تتغير القرارات عند تعديل الظروف</p>
+        <div dir={dir} className="pointer-events-none absolute left-3 top-3 rounded-2xl bg-white/80 px-4 py-2.5 text-start shadow-sm ring-1 ring-white/60 backdrop-blur-md sm:left-4 sm:top-4">
+          <h2 className="text-base font-bold text-pn-navy sm:text-xl">{tr("محاكاة توزيع المياه بين الأحواض", "Water allocation across basins")}</h2>
+          <p className="mt-0.5 hidden text-[11px] text-pn-deep/80 sm:block">
+            {tr("اضغط على أي حوض لعرض تفاصيله · شاهد كيف تتغير القرارات عند تعديل الظروف", "Click a basin for details · watch decisions change as conditions change")}
+          </p>
         </div>
 
         {views.map((v) => (
@@ -553,7 +558,7 @@ export function DigitalTwinScene() {
             onClick={() => setSelectedBasin(selectedBasin === v.id ? null : v.id)}
             className="absolute -translate-x-1/2 -translate-y-1/2"
             style={{ left: pct(BASIN_X[v.id] - BACK_HW + 6, W), top: pct(BACK_Y - 6, H) }}
-            aria-label={`تفاصيل ${v.name}`}
+            aria-label={tr(`تفاصيل الحوض ${v.id}`, `Basin ${v.id} details`)}
           >
             <span
               className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold text-white shadow-md ring-[3px] ring-white transition-colors duration-500 sm:h-10 sm:w-10 sm:text-lg"
@@ -567,87 +572,88 @@ export function DigitalTwinScene() {
         {views.map((v) => (
           <div
             key={v.id}
-            dir="rtl"
+            dir={dir}
             className="pointer-events-none absolute hidden -translate-x-1/2 rounded-lg bg-white/90 px-2 py-1 text-[11px] leading-4 shadow-sm backdrop-blur xl:block"
             style={{ left: pct(BASIN_X[v.id] + 96, W), top: pct(232, H) }}
           >
             <div className="font-semibold text-pn-navy">
-              رطوبة <span className="num">{fmt(v.moistureBefore, 0)}%</span>
+              {tr("رطوبة", "Moisture")} <span className="num">{fmt(v.moistureBefore, 0)}%</span>
               {v.irrigation > 1e-6 && (
                 <>
-                  {" "}← <span className="num text-pn-forest">{fmt(v.moistureAfter, 0)}%</span>
+                  {" "}
+                  {arrow} <span className="num text-pn-forest">{fmt(v.moistureAfter, 0)}%</span>
                 </>
               )}
             </div>
             <div className={v.irrigation > 1e-6 ? "text-pn-water" : "text-pn-muted"}>
               {v.irrigation > 1e-6 ? (
                 <>
-                  ري <span className="num font-semibold">{fmt(v.irrigation)}</span> م³
+                  {tr("ري", "Irrigating")} <span className="num font-semibold">{fmt(v.irrigation)}</span> {tr("م³", "m³")}
                 </>
               ) : (
-                "الصمام مغلق"
+                tr("الصمام مغلق", "Valve closed")
               )}
             </div>
           </div>
         ))}
 
         <div
-          dir="rtl"
+          dir={dir}
           className="pointer-events-none absolute -translate-x-1/2 rounded-xl bg-white/95 px-3 py-2 shadow-md"
           style={{ left: pct(TANK.x - 6, W), top: pct(176, H) }}
         >
-          <div className="text-[10px] text-pn-muted sm:text-[11px]">المياه المتاحة</div>
+          <div className="text-[10px] text-pn-muted sm:text-[11px]">{tr("المياه المتاحة", "Available water")}</div>
           <div className="flex items-baseline gap-1 text-pn-navy">
             <span className="num text-base font-bold sm:text-xl">{fmt(applied.availableWater, 0)}</span>
-            <span className="text-xs">م³</span>
+            <span className="text-xs">{tr("م³", "m³")}</span>
           </div>
           <div className="hidden text-[10px] text-pn-water xl:block">
-            في الخزان اليوم <span className="num font-semibold">{fmt(reservoir.stock)}</span> م³
+            {tr("في الخزان اليوم", "In tank today")} <span className="num font-semibold">{fmt(reservoir.stock)}</span> {tr("م³", "m³")}
           </div>
         </div>
 
         {atmo.outage && (
           <div
-            dir="rtl"
+            dir={dir}
             className="pulse-pop pointer-events-none absolute -translate-x-1/2 rounded-full bg-pn-danger px-3 py-1 text-[11px] font-bold text-white whitespace-nowrap shadow-md"
             style={{ left: pct(TANK.x, W), top: pct(TANK.bottom + 28, H) }}
           >
             <span className="flex items-center gap-1">
-              <PlugZap size={12} /> انقطاع الإمداد
+              <PlugZap size={12} /> {tr("انقطاع الإمداد", "Supply outage")}
             </span>
           </div>
         )}
         {atmo.delayHours > 0 && (
           <div
-            dir="rtl"
+            dir={dir}
             className="pulse-pop pointer-events-none absolute -translate-x-1/2 rounded-full bg-pn-navy/90 px-3 py-1 text-[11px] font-semibold text-white shadow-md"
             style={{ left: pct(TANK.x - TANK.rx - 35, W), top: pct(PIPE_Y + 26, H) }}
           >
             <span className="flex items-center gap-1.5">
-              <Clock size={12} className="animate-spin [animation-duration:2.5s]" /> تأخر المناوبة <span className="num">{atmo.delayHours}</span> س
+              <Clock size={12} className="animate-spin [animation-duration:2.5s]" /> {tr("تأخر المناوبة", "Turn delay")} <span className="num">{atmo.delayHours}</span> {tr("س", "h")}
             </span>
           </div>
         )}
         <div
-          dir="rtl"
+          dir={dir}
           className="pointer-events-none absolute bottom-2 left-2 hidden items-center gap-3 rounded-full bg-white/80 px-3 py-1 text-[11px] text-pn-navy shadow-sm backdrop-blur sm:flex"
         >
           <span className="flex items-center gap-1">
             <Thermometer size={12} className="text-pn-warning" /> <span className="num font-semibold">{fmt(weatherDay.tMax, 0)}°</span>
           </span>
           <span className="flex items-center gap-1">
-            <Wind size={12} className="text-pn-muted" /> <span className="num font-semibold">{fmt(weatherDay.wind)}</span> م/ث
+            <Wind size={12} className="text-pn-muted" /> <span className="num font-semibold">{fmt(weatherDay.wind)}</span> {tr("م/ث", "m/s")}
           </span>
           <span className="flex items-center gap-1">
-            <Droplet size={12} className="text-pn-water" /> <span className="num font-semibold">{fmt(weatherDay.rain)}</span> مم
+            <Droplet size={12} className="text-pn-water" /> <span className="num font-semibold">{fmt(weatherDay.rain)}</span> {tr("مم", "mm")}
           </span>
-          {atmo.dust > 0 && <span className="font-semibold text-[#9a6b2e]">غبار</span>}
+          {atmo.dust > 0 && <span className="font-semibold text-[#9a6b2e]">{tr("غبار", "Dust")}</span>}
         </div>
 
         {running && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white/30 backdrop-blur-[1px]">
-            <span dir="rtl" className="flex items-center gap-2 rounded-full bg-pn-navy px-4 py-2 text-sm text-white shadow-lg">
-              <Radio size={16} className="animate-pulse" /> جارٍ إعادة حساب المحاكاة…
+            <span dir={dir} className="flex items-center gap-2 rounded-full bg-pn-navy px-4 py-2 text-sm text-white shadow-lg">
+              <Radio size={16} className="animate-pulse" /> {tr("جارٍ إعادة حساب المحاكاة…", "Recalculating the simulation…")}
             </span>
           </div>
         )}
@@ -662,11 +668,11 @@ export function DigitalTwinScene() {
           type="button"
           onClick={() => setPlaying((p) => !p)}
           className="flex h-9 w-9 items-center justify-center rounded-full bg-pn-navy text-white shadow hover:bg-pn-deep"
-          aria-label={playing ? "إيقاف التشغيل" : "تشغيل الأيام تلقائياً"}
+          aria-label={playing ? tr("إيقاف التشغيل", "Pause") : tr("تشغيل الأيام تلقائياً", "Play through the days")}
         >
-          {playing ? <Pause size={16} /> : <Play size={16} className="-scale-x-100" />}
+          {playing ? <Pause size={16} /> : <Play size={16} className={lang === "ar" ? "-scale-x-100" : undefined} />}
         </button>
-        <div className="grid min-w-[260px] flex-1 grid-cols-7 gap-1" role="tablist" aria-label="يوم المحاكاة">
+        <div className="grid min-w-[260px] flex-1 grid-cols-7 gap-1" role="tablist" aria-label={tr("يوم المحاكاة", "Simulation day")}>
           {result.timeline.map((t) => (
             <button
               key={t.day}
@@ -684,15 +690,15 @@ export function DigitalTwinScene() {
               }`}
             >
               <div className="truncate font-semibold">
-                <span className="hidden sm:inline">اليوم </span>
-                <span className="sm:hidden">ي</span>
+                <span className="hidden sm:inline">{tr("اليوم ", "Day ")}</span>
+                <span className="sm:hidden">{tr("ي", "D")}</span>
                 {t.day}
               </div>
-              <div className={`hidden truncate text-[10px] sm:block ${selectedDay === t.day ? "text-white/80" : "text-pn-muted"}`}>{shortDateAr(t.date)}</div>
+              <div className={`hidden truncate text-[10px] sm:block ${selectedDay === t.day ? "text-white/80" : "text-pn-muted"}`}>{shortDateAr(t.date, locale)}</div>
             </button>
           ))}
         </div>
-        <div className="flex rounded-lg border border-pn-line bg-white p-0.5 text-xs" role="radiogroup" aria-label="نظام الري المعروض">
+        <div className="flex rounded-lg border border-pn-line bg-white p-0.5 text-xs" role="radiogroup" aria-label={tr("نظام الري المعروض", "Irrigation system shown")}>
           {(["pulse", "traditional"] as const).map((s) => (
             <button
               key={s}
@@ -702,7 +708,7 @@ export function DigitalTwinScene() {
               onClick={() => setStrategy(s)}
               className={`rounded-md px-3 py-1.5 font-semibold transition-colors ${strategy === s ? "bg-pn-navy text-white" : "text-pn-muted hover:text-pn-navy"}`}
             >
-              {s === "pulse" ? "Pulse" : "الري التقليدي"}
+              {s === "pulse" ? "Pulse" : tr("الري التقليدي", "Traditional")}
             </button>
           ))}
         </div>
@@ -711,15 +717,15 @@ export function DigitalTwinScene() {
         {(["healthy", "moderate", "critical"] as const).map((h) => (
           <span key={h} className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: HEALTH_META[h].color }} />
-            {HEALTH_META[h].label}
+            {tr(HEALTH_META[h].label, HEALTH_META[h].labelEn)}
           </span>
         ))}
         <span className="flex items-center gap-1.5">
-          <span className="h-1 w-5 rounded-full" style={{ backgroundColor: COLORS.water }} /> تدفق المياه
+          <span className="h-1 w-5 rounded-full" style={{ backgroundColor: COLORS.water }} /> {tr("تدفق المياه", "Water flow")}
         </span>
         <span className="ms-auto">
-          وصل إلى الخزان اليوم <span className="num font-semibold text-pn-navy">{fmt(dayInfo.delivered)}</span> م³ · ET0{" "}
-          <span className="num font-semibold text-pn-navy">{fmt(dayInfo.et0)}</span> مم
+          {tr("وصل إلى الخزان اليوم", "Delivered to the tank today")} <span className="num font-semibold text-pn-navy">{fmt(dayInfo.delivered)}</span>{" "}
+          {tr("م³", "m³")} · ET0 <span className="num font-semibold text-pn-navy">{fmt(dayInfo.et0)}</span> {tr("مم", "mm")}
         </span>
       </div>
     </div>

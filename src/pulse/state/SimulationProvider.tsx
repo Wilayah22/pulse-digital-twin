@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
+  DEFAULT_CONFIG,
   DEFAULT_INPUTS,
   DEMO_WEATHER,
   SCENARIO_PRESETS,
@@ -14,6 +15,7 @@ import {
   type SimulationResult,
   type WeatherSeries,
 } from "../engine";
+import { useLang } from "../i18n/LanguageProvider";
 import { fetchAlAhsaForecast, type LiveWeather } from "../weather/openMeteo";
 
 export type LiveStatus = "loading" | "ready" | "error";
@@ -96,7 +98,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
     return null;
   }, [applied.weatherMode, applied.customWeather, live]);
 
-  const result = useMemo(() => (weather ? runSimulation(applied, weather) : null), [applied, weather]);
+  const { lang } = useLang();
+  const result = useMemo(() => (weather ? runSimulation(applied, weather, DEFAULT_CONFIG, lang) : null), [applied, weather, lang]);
 
   const startRun = useCallback((inputs: SimulationInputs) => {
     setApplied(inputs);
