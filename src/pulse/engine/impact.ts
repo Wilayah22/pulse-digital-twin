@@ -65,3 +65,14 @@ export function estimateImpact(
     stressDaysAvoidedPerBasin: nonNeg((result.traditional.stressDays - result.pulse.stressDays) / basinsInSim),
   };
 }
+
+/** Coerce stored or user-entered values into valid assumptions; anything missing or invalid falls back to the default. */
+export function sanitizeImpact(raw: unknown): ImpactAssumptions {
+  const src = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const out = { ...DEFAULT_IMPACT };
+  for (const key of Object.keys(DEFAULT_IMPACT) as (keyof ImpactAssumptions)[]) {
+    const v = typeof src[key] === "number" ? (src[key] as number) : Number.NaN;
+    if (Number.isFinite(v) && v >= 0) out[key] = v;
+  }
+  return out;
+}

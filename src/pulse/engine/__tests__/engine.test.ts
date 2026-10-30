@@ -12,6 +12,8 @@ import {
   buildScenarioWeather,
   deliverySchedule,
   estimateImpact,
+  sanitizeImpact,
+  DEFAULT_IMPACT,
   extraterrestrialRadiation,
   forecastRainDrainage,
   leachingRequirement,
@@ -275,6 +277,16 @@ describe("oasis impact estimate", () => {
     near(est.energyKwh, est.annualWaterM3 * 0.5, 1e-6);
     near(est.costSar, est.energyKwh * 0.2, 1e-6);
     near(est.peopleEquivalent, est.annualWaterM3 / ((250 * 365) / 1000), 1e-6);
+  });
+
+  it("restores invalid stored assumptions to defaults", () => {
+    const s = sanitizeImpact({ basins: 20000, weeksPerYear: -3, pumpingKwhPerM3: "x", tariffSarPerKwh: Number.NaN, extra: 1 });
+    assert.equal(s.basins, 20000);
+    assert.equal(s.weeksPerYear, DEFAULT_IMPACT.weeksPerYear);
+    assert.equal(s.pumpingKwhPerM3, DEFAULT_IMPACT.pumpingKwhPerM3);
+    assert.equal(s.tariffSarPerKwh, DEFAULT_IMPACT.tariffSarPerKwh);
+    assert.deepEqual(sanitizeImpact(null), DEFAULT_IMPACT);
+    assert.ok(!("extra" in s));
   });
 
   it("never reports negative savings", () => {

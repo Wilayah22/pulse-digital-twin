@@ -1,9 +1,8 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import {
   DEFAULT_CONFIG,
-  DEFAULT_IMPACT,
   DEFAULT_INPUTS,
   DEMO_WEATHER,
   SCENARIO_PRESETS,
@@ -18,6 +17,7 @@ import {
   type ImpactAssumptions,
 } from "../engine";
 import { useLang } from "../i18n/LanguageProvider";
+import { getImpactServerSnapshot, getImpactSnapshot, saveImpact, subscribeImpact } from "./impactStore";
 import { fetchAlAhsaForecast, type LiveWeather } from "../weather/openMeteo";
 
 export type LiveStatus = "loading" | "ready" | "error";
@@ -71,8 +71,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
   const [selectedDay, setSelectedDay] = useState(1);
   const [selectedBasin, setSelectedBasin] = useState<BasinId | null>(null);
   const [strategy, setStrategy] = useState<Strategy>("pulse");
-  const [impact, setImpactState] = useState<ImpactAssumptions>(DEFAULT_IMPACT);
-  const setImpact = useCallback((update: (a: ImpactAssumptions) => ImpactAssumptions) => setImpactState(update), []);
+  const impact = useSyncExternalStore(subscribeImpact, getImpactSnapshot, getImpactServerSnapshot);
+  const setImpact = useCallback((update: (a: ImpactAssumptions) => ImpactAssumptions) => saveImpact(update(getImpactSnapshot())), []);
   const runTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Only the async callbacks set state; the initial "loading" state comes from useState.
