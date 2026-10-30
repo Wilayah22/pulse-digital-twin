@@ -103,8 +103,7 @@ function BigStat({
 }
 
 export function ImpactPanel() {
-  const { result } = useSimulation();
-  const [a, setA] = useState<ImpactAssumptions>(DEFAULT_IMPACT);
+  const { result, impact: a, setImpact: setA } = useSimulation();
   const [open, setOpen] = useState(false);
   const { t, lang } = useLang();
   const pick = (pair: [string, string]) => (lang === "en" ? pair[1] : pair[0]);
@@ -227,7 +226,7 @@ export function ImpactPanel() {
                       ))}
                       <button
                         type="button"
-                        onClick={() => setA(DEFAULT_IMPACT)}
+                        onClick={() => setA(() => DEFAULT_IMPACT)}
                         className="col-span-full mt-1 justify-self-start text-[11px] font-semibold text-pn-forest hover:underline"
                       >
                         {t("استعادة الافتراضات الأصلية", "Restore default assumptions")}

@@ -15,7 +15,7 @@ const RENDER_WAIT_MS = 1400;
  * produces a vector PDF with real, selectable Arabic/English text.
  */
 export function ReportButton() {
-  const { result, activePreset } = useSimulation();
+  const { result, activePreset, impact } = useSimulation();
   const { t } = useLang();
   const [preparing, setPreparing] = useState(false);
 
@@ -46,7 +46,7 @@ export function ReportButton() {
       {preparing &&
         createPortal(
           <div id="pulse-report-root">
-            <ReportDocument result={result} activePreset={activePreset} />
+            <ReportDocument result={result} activePreset={activePreset} impact={impact} />
           </div>,
           document.body,
         )}

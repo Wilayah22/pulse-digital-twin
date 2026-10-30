@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   DEFAULT_CONFIG,
+  DEFAULT_IMPACT,
   DEFAULT_INPUTS,
   DEMO_WEATHER,
   SCENARIO_PRESETS,
@@ -14,6 +15,7 @@ import {
   type SimulationInputs,
   type SimulationResult,
   type WeatherSeries,
+  type ImpactAssumptions,
 } from "../engine";
 import { useLang } from "../i18n/LanguageProvider";
 import { fetchAlAhsaForecast, type LiveWeather } from "../weather/openMeteo";
@@ -46,6 +48,9 @@ interface SimulationContextValue {
   setSelectedBasin: (b: BasinId | null) => void;
   strategy: Strategy;
   setStrategy: (s: Strategy) => void;
+  /** Oasis-scale impact assumptions, shared by the impact section, the tour and the PDF report. */
+  impact: ImpactAssumptions;
+  setImpact: (update: (a: ImpactAssumptions) => ImpactAssumptions) => void;
 }
 
 const SimulationContext = createContext<SimulationContextValue | null>(null);
@@ -66,6 +71,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
   const [selectedDay, setSelectedDay] = useState(1);
   const [selectedBasin, setSelectedBasin] = useState<BasinId | null>(null);
   const [strategy, setStrategy] = useState<Strategy>("pulse");
+  const [impact, setImpactState] = useState<ImpactAssumptions>(DEFAULT_IMPACT);
+  const setImpact = useCallback((update: (a: ImpactAssumptions) => ImpactAssumptions) => setImpactState(update), []);
   const runTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Only the async callbacks set state; the initial "loading" state comes from useState.
@@ -158,6 +165,8 @@ export function SimulationProvider({ children }: { children: React.ReactNode }) 
     setSelectedBasin,
     strategy,
     setStrategy,
+    impact,
+    setImpact,
   };
 
   return <SimulationContext.Provider value={value}>{children}</SimulationContext.Provider>;

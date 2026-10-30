@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight, Pause, Play, Presentation, X } from "lucide-react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { estimateImpact, waterSavingPercent, type Recommendation, type SimulationResult } from "../engine";
+import { estimateImpact, waterSavingPercent, type Recommendation, type ImpactAssumptions, type SimulationResult } from "../engine";
 import { useLang } from "../i18n/LanguageProvider";
 import { useSimulation } from "../state/SimulationProvider";
 import { fmt } from "./ui";
@@ -29,18 +29,18 @@ const STEPS: Step[] = [
 const STEP_MS = 12_000;
 
 /** Caption text for a step, built only from the computed result. */
-function caption(step: Step, r: SimulationResult, en: boolean): { lead: string; stats: string } {
+function caption(step: Step, r: SimulationResult, en: boolean, impact: ImpactAssumptions): { lead: string; stats: string } {
   const saving = waterSavingPercent(r);
   const stats = en
     ? `Saving ${fmt(saving, 0)}% · ${fmt(r.pulse.totalUsed)} m³ vs ${fmt(r.traditional.totalUsed)} m³ traditional · stress days ${r.pulse.stressDays} vs ${r.traditional.stressDays}`
     : `توفير ${fmt(saving, 0)}% · ${fmt(r.pulse.totalUsed)} م³ مقابل ${fmt(r.traditional.totalUsed)} م³ تقليدياً · أيام إجهاد ${r.pulse.stressDays} مقابل ${r.traditional.stressDays}`;
   if (step.section === "impact") {
-    const est = estimateImpact(r);
+    const est = estimateImpact(r, impact);
     const lead =
       est.annualWaterM3 > 0
         ? en
-          ? `Under the demo assumptions (10,000 basins · 40 weeks), Pulse saves about ${fmt(est.annualWaterM3 / 1e6, 2)} million m³ a year, enough for the household use of about ${fmt(est.peopleEquivalent / 1000, 1)}k people.`
-          : `بافتراضات العرض (10,000 حوض · 40 أسبوعاً)، يوفّر Pulse نحو ${fmt(est.annualWaterM3 / 1e6, 2)} مليون م³ سنوياً، تكفي الاستهلاك المنزلي لنحو ${fmt(est.peopleEquivalent / 1000, 1)} ألف شخص.`
+          ? `With ${fmt(impact.basins, 0)} basins and ${impact.weeksPerYear} similar weeks a year, Pulse saves about ${fmt(est.annualWaterM3 / 1e6, 2)} million m³ a year, enough for the household use of about ${fmt(est.peopleEquivalent / 1000, 1)}k people.`
+          : `على ${fmt(impact.basins, 0)} حوض و${impact.weeksPerYear} أسبوعاً مشابهاً سنوياً، يوفّر Pulse نحو ${fmt(est.annualWaterM3 / 1e6, 2)} مليون م³ سنوياً، تكفي الاستهلاك المنزلي لنحو ${fmt(est.peopleEquivalent / 1000, 1)} ألف شخص.`
         : en
           ? "No surplus water in this scenario; Pulse's value is in sharing scarcity and reducing stress."
           : "في هذا السيناريو لا يوجد فائض مياه؛ فائدة Pulse في توزيع الشح وتقليل الإجهاد.";
@@ -59,7 +59,7 @@ const TourContext = createContext<TourValue>({ active: false, start: () => {} })
 export const useTour = () => useContext(TourContext);
 
 export function TourProvider({ children }: { children: React.ReactNode }) {
-  const { applyPreset, setSelectedDay, setSelectedBasin, result, reset } = useSimulation();
+  const { applyPreset, setSelectedDay, setSelectedBasin, result, reset, impact } = useSimulation();
   const { t, lang, dir } = useLang();
   const en = lang === "en";
   const [index, setIndex] = useState<number | null>(null);
@@ -141,7 +141,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo(() => ({ active: index !== null, start }), [index, start]);
   const step = index === null ? null : STEPS[index];
-  const text = step && result ? caption(step, result, en) : null;
+  const text = step && result ? caption(step, result, en, impact) : null;
   const Back = dir === "rtl" ? ChevronRight : ChevronLeft;
   const Forward = dir === "rtl" ? ChevronLeft : ChevronRight;
 

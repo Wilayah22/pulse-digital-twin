@@ -5,7 +5,6 @@ import {
   APPLICATION_EFFICIENCY,
   BASINS,
   CROP,
-  DEFAULT_IMPACT,
   SCENARIO_PRESETS,
   SITE,
   SOIL,
@@ -14,6 +13,7 @@ import {
   readilyAvailableWater,
   totalAvailableWater,
   waterSavingPercent,
+  type ImpactAssumptions,
   type SimulationResult,
 } from "../../engine";
 import { useLang } from "../../i18n/LanguageProvider";
@@ -62,7 +62,16 @@ function Table({ head, rows }: { head: string[]; rows: (string | number)[][] }) 
 }
 
 /** A4 report built only from the simulation result currently on screen. */
-export function ReportDocument({ result, activePreset }: { result: SimulationResult; activePreset: string | null }) {
+export function ReportDocument({
+  result,
+  activePreset,
+  impact,
+}: {
+  result: SimulationResult;
+  activePreset: string | null;
+  /** The assumptions currently set in the impact section. */
+  impact: ImpactAssumptions;
+}) {
   const { t, lang, dir, locale } = useLang();
   const m3 = t("م³", "m³");
   const p = result.pulse;
@@ -76,7 +85,7 @@ export function ReportDocument({ result, activePreset }: { result: SimulationRes
         ? t("سيناريو طقس تجريبي مخصص", "Custom test weather scenario")
         : t("بيانات تجريبية (تعذر الاتصال بـ Open-Meteo)", "Demo data (Open-Meteo unreachable)");
   const generated = new Intl.DateTimeFormat(locale, { dateStyle: "long", timeStyle: "short" }).format(new Date());
-  const est = estimateImpact(result);
+  const est = estimateImpact(result, impact);
   const i = result.inputs;
   const dust = { none: t("بدون", "none"), moderate: t("متوسط", "moderate"), severe: t("شديد", "severe") }[i.customWeather.dust];
 
@@ -287,8 +296,8 @@ export function ReportDocument({ result, activePreset }: { result: SimulationRes
         )}
         <p className="mt-2 text-[10.5px] text-pn-muted">
           {t(
-            `الافتراضات: ${fmt(DEFAULT_IMPACT.basins, 0)} حوض · ${DEFAULT_IMPACT.weeksPerYear} أسبوعاً مشابهاً سنوياً · ${DEFAULT_IMPACT.pumpingKwhPerM3} kWh/م³ · ${DEFAULT_IMPACT.tariffSarPerKwh} ر.س/kWh · ${DEFAULT_IMPACT.litresPerPersonDay} لتر/فرد/يوم · ${DEFAULT_IMPACT.co2KgPerKwh} كغ CO₂/kWh. تقديرات للعرض وليست قياسات ميدانية.`,
-            `Assumptions: ${fmt(DEFAULT_IMPACT.basins, 0)} basins · ${DEFAULT_IMPACT.weeksPerYear} similar weeks/yr · ${DEFAULT_IMPACT.pumpingKwhPerM3} kWh/m³ · ${DEFAULT_IMPACT.tariffSarPerKwh} SAR/kWh · ${DEFAULT_IMPACT.litresPerPersonDay} L/person/day · ${DEFAULT_IMPACT.co2KgPerKwh} kg CO₂/kWh. Illustrative estimates, not field measurements.`,
+            `الافتراضات: ${fmt(impact.basins, 0)} حوض · ${impact.weeksPerYear} أسبوعاً مشابهاً سنوياً · ${impact.pumpingKwhPerM3} kWh/م³ · ${impact.tariffSarPerKwh} ر.س/kWh · ${impact.litresPerPersonDay} لتر/فرد/يوم · ${impact.co2KgPerKwh} كغ CO₂/kWh. تقديرات للعرض وليست قياسات ميدانية.`,
+            `Assumptions: ${fmt(impact.basins, 0)} basins · ${impact.weeksPerYear} similar weeks/yr · ${impact.pumpingKwhPerM3} kWh/m³ · ${impact.tariffSarPerKwh} SAR/kWh · ${impact.litresPerPersonDay} L/person/day · ${impact.co2KgPerKwh} kg CO₂/kWh. Illustrative estimates, not field measurements.`,
           )}
         </p>
       </Section>
