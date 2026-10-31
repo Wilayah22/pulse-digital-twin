@@ -164,13 +164,32 @@ function Basin({ v, selected, onSelect, salt }: { v: BasinDayView; selected: boo
       {/* rim highlight */}
       <path d={`M${cx - BACK_HW},${BACK_Y} L${cx + BACK_HW},${BACK_Y}`} stroke="#fff" strokeOpacity={0.5} strokeWidth={1.5} />
       <path d={`M${cx - FRONT_HW},${FRONT_Y} L${cx + FRONT_HW},${FRONT_Y}`} stroke="#fff" strokeOpacity={0.35} strokeWidth={1.5} />
-      {/* soil moisture sensor with solar cap */}
+      {/* Plant layer: thermal camera watching the canopy (T_canopy − T_air); field of view toward the crown */}
+      <polygon
+        points={`${sensor.x - 10},${sensor.y - 66} ${cx - 46},${BACK_Y - 150} ${cx + 34},${BACK_Y - 96}`}
+        fill="url(#pn-fov)"
+        opacity={0.55}
+      />
+      {/* Hydraulic layer: ESP32 controller node on a post, with a small solar panel */}
       <g>
         <line x1={sensor.x} x2={sensor.x} y1={sensor.y + 10} y2={sensor.y - 34} stroke="#37474f" strokeWidth={3} strokeLinecap="round" />
-        <rect x={sensor.x - 8} y={sensor.y - 50} width={16} height={20} rx={3.5} fill="url(#pn-device)" />
-        <polygon points={`${sensor.x - 12},${sensor.y - 52} ${sensor.x + 12},${sensor.y - 56} ${sensor.x + 10},${sensor.y - 50} ${sensor.x - 14},${sensor.y - 46}`} fill="#1d3f66" stroke="#9fb8d0" strokeWidth={0.8} />
-        <circle cx={sensor.x} cy={sensor.y - 40} r={2.8} fill={HEALTH_META[v.health].color} />
-        <g transform={`translate(${sensor.x},${sensor.y - 62})`}>
+        <rect x={sensor.x - 9} y={sensor.y - 52} width={18} height={22} rx={3.5} fill="url(#pn-device)" />
+        <rect x={sensor.x - 5} y={sensor.y - 47} width={10} height={7} rx={1} fill="#2f7d5b" stroke="#9fd3b8" strokeWidth={0.6} />
+        <circle cx={sensor.x} cy={sensor.y - 35} r={2.4} fill={HEALTH_META[v.health].color} />
+        <polygon
+          points={`${sensor.x + 2},${sensor.y - 54} ${sensor.x + 20},${sensor.y - 58} ${sensor.x + 18},${sensor.y - 52} ${sensor.x},${sensor.y - 48}`}
+          fill="#1d3f66"
+          stroke="#9fb8d0"
+          strokeWidth={0.8}
+        />
+        {/* thermal camera */}
+        <g transform={`translate(${sensor.x - 10},${sensor.y - 66}) rotate(-28)`}>
+          <rect x={-2} y={-6} width={16} height={11} rx={2.5} fill="#2b3a42" />
+          <circle cx={-2} cy={-0.5} r={4.2} fill="#11191d" stroke="#e8a33a" strokeWidth={1.4} />
+          <circle cx={-3} cy={-1.5} r={1.2} fill="#fff" opacity={0.6} />
+        </g>
+        <line x1={sensor.x - 4} x2={sensor.x - 8} y1={sensor.y - 52} y2={sensor.y - 61} stroke="#37474f" strokeWidth={2} />
+        <g transform={`translate(${sensor.x + 4},${sensor.y - 66})`}>
           <path d="M-6,-1 a8,8 0 0 1 12,0" stroke="#2699c7" strokeWidth={1.6} fill="none" strokeLinecap="round" />
           <path d="M-11,-6 a15,15 0 0 1 22,0" stroke="#2699c7" strokeWidth={1.6} fill="none" strokeLinecap="round" className="pulse-ping" />
         </g>
@@ -269,6 +288,22 @@ function Pipes({ views, delayed }: { views: BasinDayView[]; delayed: boolean }) 
               />
             )}
             <Valve x={x} y={PIPE_Y - 34} open={open} />
+            {/* Hydraulic layer: pressure sensor on the branch, read during each pulse's step test */}
+            <g>
+              <line x1={x + 5} x2={x + 16} y1={PIPE_Y - 12} y2={PIPE_Y - 12} stroke="#15557e" strokeWidth={4} />
+              <circle cx={x + 23} cy={PIPE_Y - 12} r={7.5} fill="#f4f6f7" stroke="#2d3b43" strokeWidth={2} />
+              <line
+                x1={x + 23}
+                y1={PIPE_Y - 12}
+                x2={x + 23 + 5 * Math.cos(open ? -2.4 : -0.7)}
+                y2={PIPE_Y - 12 + 5 * Math.sin(open ? -2.4 : -0.7)}
+                stroke="#dc5b52"
+                strokeWidth={1.6}
+                strokeLinecap="round"
+                style={{ transition: "all 0.6s" }}
+              />
+              <circle cx={x + 23} cy={PIPE_Y - 12} r={1.3} fill="#2d3b43" />
+            </g>
             {/* outlet inside the basin */}
             <rect x={x - 7} y={FRONT_Y - 16} width={14} height={8} rx={2} fill="#15557e" />
             {open &&
@@ -484,6 +519,10 @@ function SceneDefs() {
         <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" seed="7" />
         <feColorMatrix type="matrix" values="0 0 0 0 0.35  0 0 0 0 0.25  0 0 0 0 0.12  0 0 0 0.9 -0.35" />
       </filter>
+      <linearGradient id="pn-fov" x1="1" y1="1" x2="0" y2="0">
+        <stop offset="0" stopColor="#f2a65a" stopOpacity="0.55" />
+        <stop offset="1" stopColor="#f2a65a" stopOpacity="0" />
+      </linearGradient>
       <WeatherDefs />
       <pattern id="pn-grain-fill" width="160" height="160" patternUnits="userSpaceOnUse">
         <rect width="160" height="160" filter="url(#pn-grain)" />
@@ -574,7 +613,7 @@ export function DigitalTwinScene() {
             key={v.id}
             dir={dir}
             className="pointer-events-none absolute hidden -translate-x-1/2 rounded-lg bg-white/90 px-2 py-1 text-[11px] leading-4 shadow-sm backdrop-blur xl:block"
-            style={{ left: pct(BASIN_X[v.id] + 96, W), top: pct(232, H) }}
+            style={{ left: pct(BASIN_X[v.id] + 88, W), top: pct(FRONT_Y + 3, H) }}
           >
             <div className="font-semibold text-pn-navy">
               {tr("رطوبة", "Moisture")} <span className="num">{fmt(v.moistureBefore, 0)}%</span>

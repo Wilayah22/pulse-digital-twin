@@ -3,7 +3,8 @@
 
 import { DEFAULT_IMPACT, sanitizeImpact, type ImpactAssumptions } from "../engine";
 
-const KEY = "pulse.impact.v1";
+// v2: default pumping energy changed to 0.8 kWh/m³ (150 m lift), so earlier saved test values are not reused.
+const KEY = "pulse.impact.v2";
 const listeners = new Set<() => void>();
 /** Cached snapshot: useSyncExternalStore needs the same object until something changes. */
 let cache: ImpactAssumptions | null = null;

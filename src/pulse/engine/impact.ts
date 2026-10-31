@@ -21,7 +21,8 @@ export interface ImpactAssumptions {
 export const DEFAULT_IMPACT: ImpactAssumptions = {
   basins: 10_000,
   weeksPerYear: 40,
-  pumpingKwhPerM3: 0.5,
+  // Project paper: each m³ not pumped from a 150 m lift saves about 0.8 kWh.
+  pumpingKwhPerM3: 0.8,
   tariffSarPerKwh: 0.18,
   litresPerPersonDay: 263,
   co2KgPerKwh: 0.57,

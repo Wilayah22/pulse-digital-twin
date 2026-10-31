@@ -39,7 +39,10 @@ const FIELDS: Field[] = [
     label: ["طاقة الضخ لكل م³", "Pumping energy per m³"],
     unit: ["kWh", "kWh"],
     step: 0.05,
-    tip: ["طاقة ضخ المياه الجوفية لكل متر مكعب. تختلف حسب عمق البئر ونوع المضخة.", "Groundwater pumping energy per m³; varies with well depth and pump type."],
+    tip: [
+      "طاقة ضخ المياه الجوفية لكل متر مكعب. القيمة الافتراضية 0.8 kWh عند عمق رفع 150 م حسب ورقة المشروع، وتختلف حسب عمق البئر ونوع المضخة.",
+      "Groundwater pumping energy per m³. The default, 0.8 kWh at a 150 m lift, comes from the project paper and varies with well depth and pump type.",
+    ],
   },
   {
     key: "tariffSarPerKwh",

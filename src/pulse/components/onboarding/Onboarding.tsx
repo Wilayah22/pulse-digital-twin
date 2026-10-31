@@ -3,21 +3,15 @@
 import {
   ArrowLeft,
   ArrowRight,
-  BrainCircuit,
-  ChartColumn,
-  CloudSun,
+  Building2,
   Cpu,
-  FileText,
   FlaskConical,
   Gauge,
-  Globe2,
-  Layers,
-  Lightbulb,
   Presentation,
-  Radio,
-  Scale,
-  ThermometerSun,
-  Timer,
+  QrCode,
+  Thermometer,
+  Waves,
+  Zap,
   type LucideIcon,
 } from "lucide-react";
 import Image from "next/image";
@@ -69,17 +63,17 @@ function StepWelcome({ t }: { t: T }) {
     <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
       <div>
         <span className="inline-flex items-center gap-2 rounded-full bg-[#E6F4EC] px-3 py-1 text-xs font-semibold text-pn-forest">
-          <span className="h-1.5 w-1.5 rounded-full bg-pn-green" /> {t("التوأم الرقمي لواحة الأحساء", "A digital twin of Al-Ahsa Oasis")}
+          <span className="h-1.5 w-1.5 rounded-full bg-pn-green" /> {t("ورقة تعريفية تقنية · 2026", "Technical overview · 2026")}
         </span>
         <h1 className="mt-4 text-3xl leading-tight font-extrabold text-pn-navy sm:text-[42px] sm:leading-[1.2]">
-          {t("كل قطرة ماء", "Every drop of water,")}
+          {t("نظام", "The")} <span className="text-pn-forest">Pulse</span> {t("للري الدقيق", "precision irrigation system")}
           <br />
-          <span className="text-pn-forest">{t("تذهب حيث تُحتاج", "where it is needed")}</span>
+          {t("في الواحات التقليدية", "for traditional oases")}
         </h1>
         <p className="mt-4 max-w-xl text-base leading-8 text-pn-ink/80">
           {t(
-            "Pulse نظام ذكي لتوزيع مياه الري بين أحواض النخيل التقليدية. لا يقرر متى نروي فحسب، بل كيف نوزّع كل قطرة متاحة بذكاء بين الأحواض.",
-            "Pulse is a smart irrigation system for traditional date-palm basins. It doesn't just decide when to irrigate. It decides how to share every available drop across the basins.",
+            "نظام منخفض التكلفة يحوّل كل عملية ري إلى قياس، ويُجيب عن السؤال الحقيقي في الواحات: أي حوض نسقي أولاً، وبأي ترتيب، ولأي مدة، ضمن حصة مياه مشتركة ومحدودة.",
+            "A low-cost system that turns every irrigation into a measurement and answers the real question in oases: which basin first, in what order, and for how long, within a shared and limited water allowance.",
           )}
         </p>
       </div>
@@ -98,123 +92,291 @@ function StepWelcome({ t }: { t: T }) {
   );
 }
 
-function StepChallenge({ t }: { t: T }) {
+function StepProblem({ t }: { t: T }) {
   return (
     <div>
-      <Kicker>{t("التحدي", "The challenge")}</Kicker>
-      <h2 className="mt-2 text-2xl font-extrabold text-pn-navy sm:text-4xl">{t("الري بالحصص الثابتة لا يرى الأحواض", "Fixed-share irrigation can't see the basins")}</h2>
-      <p className="mt-3 max-w-3xl text-[15px] leading-8 text-pn-ink/75">
-        {t(
-          "في نظام المناوبة التقليدي تحصل كل الأحواض على نفس الحصة، سواء كانت تربتها جافة أو مشبعة. النتيجة: ماء يتسرب تحت الجذور في حوض، وإجهاد مائي في حوض آخر.",
-          "In the traditional rotation every basin gets the same share, whether its soil is dry or saturated. The result: water draining below the roots in one basin and water stress in another.",
-        )}
-      </p>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <Kicker>{t("01 · المشكلة الأساسية والواقع الميداني", "01 · The core problem and field reality")}</Kicker>
+      <h2 className="mt-2 text-2xl font-extrabold text-pn-navy sm:text-4xl">
+        {t("ليس فقط «متى نسقي؟» بل «أي حوض أولاً؟ وبأي ترتيب؟ ولأي مدة؟»", "Not just “when to irrigate?” but “which basin first, in what order, for how long?”")}
+      </h2>
+      <div className="mt-6 grid gap-4 lg:grid-cols-3">
         <Card
-          icon={Scale}
-          tone="#D9A441"
-          title={t("حصص لا تراعي الحاجة", "Shares ignore need")}
-          text={t("توزيع متساوٍ بين حوض جاف وآخر رطب يهدر الماء ويُجهد النخيل.", "Splitting water equally between a dry and a wet basin wastes water and stresses palms.")}
-        />
-        <Card
-          icon={ThermometerSun}
-          tone="#DC5B52"
-          title={t("حرارة وطلب مرتفع", "Heat and high demand")}
-          text={t("التبخر-النتح في الصيف يستنزف التربة بسرعة، والجدول الثابت لا يتكيف.", "Summer evapotranspiration drains soils quickly, and a fixed schedule can't adapt.")}
-        />
-        <Card
-          icon={FlaskConical}
+          icon={Building2}
           tone="#153B4A"
-          title={t("تراكم الأملاح", "Salt build-up")}
-          text={t("مياه الري المالحة ترفع ملوحة التربة إن لم يُدر الغسيل بحساب.", "Saline irrigation water raises soil salinity unless leaching is managed deliberately.")}
+          title={t("القصور في التقنيات الحالية", "Limits of current technology")}
+          text={t(
+            "تفترض الشركات الكبرى (مثل CropX وNetafim) وجود أنظمة ضغطية حديثة ومياه متاحة بلا حدود ودون قيود لكل حقل على حدة.",
+            "Major vendors (such as CropX and Netafim) assume modern pressurised systems and unconstrained water for each field separately.",
+          )}
         />
         <Card
-          icon={Timer}
+          icon={Waves}
           tone="#2699C7"
-          title={t("تأخر المناوبات وانقطاعها", "Late or missing turns")}
-          text={t("حين تتأخر المياه أو تنقطع، لا توجد خطة لتوجيه ما تبقّى.", "When water arrives late or stops, there is no plan for steering what's left.")}
+          title={t("الواقع في الواحات (مثل الأحساء)", "The reality in oases (e.g. Al-Ahsa)")}
+          text={t(
+            "تصل المياه عبر قنوات جماعية بنظام المناوبة المائية، حيث يتشارك المزارعون مصدر تدفق محدوداً زمنياً محدداً.",
+            "Water arrives through shared channels on a rotation, with farmers sharing a time-limited flow from a single source.",
+          )}
+        />
+        <Card
+          icon={Gauge}
+          tone="#D9A441"
+          title={t("التحدي الحقيقي", "The real challenge")}
+          text={t(
+            "مشكلة جدولة تحت قيود سعة مشتركة: توزيع حصة محدودة بين عدة أحواض في الوقت المناسب وبالكمية المناسبة.",
+            "A scheduling problem under shared-capacity constraints: dividing a limited allowance across several basins at the right time and in the right amount.",
+          )}
         />
       </div>
     </div>
   );
 }
 
-function StepHow({ t, dir }: { t: T; dir: "rtl" | "ltr" }) {
-  const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
-  const steps: { icon: LucideIcon; title: string; text: string }[] = [
-    {
-      icon: Radio,
-      title: t("نقيس", "Measure"),
-      text: t("حساسات رطوبة التربة في كل حوض، وتوقعات الطقس من Open-Meteo.", "Soil-moisture sensors in every basin, plus the Open-Meteo weather forecast."),
-    },
-    {
-      icon: Cpu,
-      title: t("نحاكي", "Simulate"),
-      text: t("توأم رقمي بموازنة مائية يومية وفق FAO-56 يتنبأ بحالة كل حوض.", "A digital twin with an FAO-56 daily water balance forecasts each basin."),
-    },
-    {
-      icon: Gauge,
-      title: t("نوزّع", "Allocate"),
-      text: t("أولوية حسب جفاف التربة والطلب المائي والملوحة، ضمن مخزون الخزان.", "Priority by soil dryness, crop demand and salinity, within the reservoir stock."),
-    },
-    {
-      icon: Lightbulb,
-      title: t("نفسّر", "Explain"),
-      text: t("توصية واضحة لكل حوض: ماذا نفعل، ولماذا، وما الأثر المتوقع.", "A clear recommendation per basin: what to do, why, and the expected impact."),
-    },
-  ];
+function Layer({
+  icon: Icon,
+  tone,
+  name,
+  sub,
+  rows,
+}: {
+  icon: LucideIcon;
+  tone: string;
+  name: string;
+  sub: string;
+  rows: { label: string; text: string }[];
+}) {
   return (
-    <div>
-      <Kicker>{t("كيف يعمل Pulse", "How Pulse works")}</Kicker>
-      <h2 className="mt-2 text-2xl font-extrabold text-pn-navy sm:text-4xl">{t("من القياس إلى القرار في أربع خطوات", "From measurement to decision in four steps")}</h2>
-      <div className="mt-8 grid gap-4 lg:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] lg:items-stretch">
-        {steps.map((s, i) => (
-          <div key={s.title} className="contents">
-            <div className="relative rounded-2xl border border-pn-line bg-white p-5 shadow-[0_10px_30px_-18px_rgba(16,42,56,0.25)]">
-              <span className="absolute -top-3 start-4 rounded-full bg-pn-navy px-2.5 py-0.5 text-[11px] font-bold text-white">
-                <span className="num">{i + 1}</span>
-              </span>
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-pn-forest to-pn-green text-white shadow-md">
-                <s.icon size={22} />
-              </span>
-              <h3 className="mt-4 text-lg font-bold text-pn-navy">{s.title}</h3>
-              <p className="mt-1 text-[13px] leading-6 text-pn-ink/75">{s.text}</p>
-            </div>
-            {i < steps.length - 1 && (
-              <div className="hidden items-center justify-center text-pn-gold lg:flex" aria-hidden>
-                <Arrow size={22} />
-              </div>
-            )}
+    <div className="flex flex-col rounded-2xl border border-pn-line bg-white p-5 shadow-[0_10px_30px_-18px_rgba(16,42,56,0.25)]">
+      <div className="flex items-center gap-3">
+        <span className="flex h-11 w-11 items-center justify-center rounded-xl text-white shadow-sm" style={{ background: `linear-gradient(135deg, ${tone}, ${tone}cc)` }}>
+          <Icon size={20} />
+        </span>
+        <div>
+          <h3 className="text-[16px] font-bold text-pn-navy">{name}</h3>
+          <div className="latin text-[11px] text-pn-muted">{sub}</div>
+        </div>
+      </div>
+      <dl className="mt-3 space-y-2.5 text-[12.5px] leading-6">
+        {rows.map((r) => (
+          <div key={r.label}>
+            <dt className="font-bold" style={{ color: tone }}>
+              {r.label}
+            </dt>
+            <dd className="text-pn-ink/80">{r.text}</dd>
           </div>
         ))}
-      </div>
-      <p className="mt-6 text-xs text-pn-muted">
-        {t(
-          "المنهجية: FAO-56 (بنمان-مونتيث والموازنة المائية) · FAO-29 (متطلب الغسيل وتحمّل النخيل للملوحة) · بيانات الطقس من Open-Meteo.",
-          "Methods: FAO-56 (Penman-Monteith and soil water balance) · FAO-29 (leaching requirement and date-palm salt tolerance) · weather from Open-Meteo.",
-        )}
-      </p>
+      </dl>
     </div>
   );
 }
 
-function StepInside({ t }: { t: T }) {
-  const items: { icon: LucideIcon; title: string; text: string; tone: string }[] = [
-    { icon: Layers, tone: "#176B50", title: t("توأم رقمي حي", "Live digital twin"), text: t("الأحواض والصمامات والخزان تتفاعل مع الطقس والقرارات يوماً بيوم.", "Basins, valves and the reservoir react to weather and decisions day by day.") },
-    { icon: CloudSun, tone: "#E6A23C", title: t("7 سيناريوهات جاهزة", "7 ready scenarios"), text: t("موجة حر، أمطار، شح مياه، ملوحة، تأخر، انقطاع… بضغطة واحدة.", "Heatwave, rain, water cuts, salinity, delays, outages, in one click.") },
-    { icon: ChartColumn, tone: "#2699C7", title: t("مقارنة مع الري التقليدي", "Comparison with traditional"), text: t("نفس الطقس ونفس المياه، والفرق في الاستهلاك والإجهاد والملوحة.", "Same weather, same water: see the difference in use, stress and salinity.") },
-    { icon: BrainCircuit, tone: "#153B4A", title: t("توصيات قابلة للتفسير", "Explainable recommendations"), text: t("كل قرار معه سببه المحسوب وأثره المتوقع، لا توصيات ثابتة.", "Every decision comes with its computed reason and expected impact.") },
-    { icon: Globe2, tone: "#38A169", title: t("الأثر على مستوى الواحة", "Oasis-scale impact"), text: t("تقدير سنوي للمياه والطاقة والتكلفة بافتراضات تعدّلها بنفسك.", "Annual water, energy and cost estimates with assumptions you can edit.") },
-    { icon: FileText, tone: "#B7862F", title: t("تقرير PDF وعرض تقديمي", "PDF report and presentation"), text: t("تقرير احترافي بضغطة، وجولة عرض بملء الشاشة للمحكّمين.", "A one-click professional report and a full-screen guided tour.") },
+function StepLayers({ t }: { t: T }) {
+  return (
+    <div>
+      <Kicker>{t("02 · الهيكلة التقنية", "02 · Technical architecture")}</Kicker>
+      <h2 className="mt-2 text-2xl font-extrabold text-pn-navy sm:text-4xl">{t("الطبقات الثلاث", "Three layers")}</h2>
+      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+        <Layer
+          icon={Cpu}
+          tone="#2699C7"
+          name={t("الطبقة الهيدروليكية", "Hydraulic layer")}
+          sub="Hydraulic Layer"
+          rows={[
+            { label: t("المكونات", "Components"), text: t("وحدة ESP32 + صمام كهربائي (Solenoid Valve) + مستشعر ضغط لكل حوض.", "An ESP32 unit, a solenoid valve and a pressure sensor for each basin.") },
+            {
+              label: t("آلية العمل (Step Test)", "How it works (Step Test)"),
+              text: t(
+                "تُعامل كل عملية ري آلياً كـ«اختبار خطوة»؛ يراقب الجهاز هبوط الضغط والتدفق لاستنتاج معدل تسرب المياه في التربة (Ks) وعمق جبهة البلل دون الحاجة إلى خبير تربة.",
+                "Every irrigation is treated as a “step test”: the device watches the pressure drop and flow to infer the soil's infiltration rate (Ks) and wetting-front depth, with no soil expert needed.",
+              ),
+            },
+            {
+              label: t("الابتكار", "Innovation"),
+              text: t(
+                "يتم الري على شكل نبضات تتوقف فوراً قبل حدوث التسرب العميق، الذي يهدر المياه ويسحب الأملاح والنترات بعيداً عن الجذور.",
+                "Water is applied in pulses that stop before deep percolation, which wastes water and pulls salts and nitrates away from the roots.",
+              ),
+            },
+          ]}
+        />
+        <Layer
+          icon={FlaskConical}
+          tone="#B7862F"
+          name={t("طبقة الملوحة", "Salt layer")}
+          sub={t("«دفتر أستاذ الأملاح» · Salt Layer", "“Salt ledger” · Salt Layer")}
+          rows={[
+            {
+              label: t("آلية العمل", "How it works"),
+              text: t(
+                "موازنة ثنائية للمياه والأملاح مع معايرة فورية، تتنبأ بملوحة منطقة الجذور قبل 12 شهراً.",
+                "A coupled water-and-salt balance with live calibration that forecasts root-zone salinity 12 months ahead.",
+              ),
+            },
+            {
+              label: t("الميزة", "Advantage"),
+              text: t(
+                "بدلاً من نسبة الغسيل الثابتة (10–15%) المستخدمة حالياً، يطبّق النظام غسيلاً ديناميكياً ذكياً، ويلغيه كلياً في مواسم الأمطار لتوفير المياه.",
+                "Instead of today's fixed 10–15% leaching fraction, the system applies smart dynamic leaching and skips it entirely in rainy seasons to save water.",
+              ),
+            },
+          ]}
+        />
+        <Layer
+          icon={Thermometer}
+          tone="#38A169"
+          name={t("طبقة النبات", "Plant layer")}
+          sub="Plant Layer"
+          rows={[
+            { label: t("المكونات", "Components"), text: t("كاميرا حرارية رخيصة أو مشبك لقياس سماكة ورقة النبات.", "A low-cost thermal camera or a clip that measures leaf thickness.") },
+            {
+              label: t("آلية العمل", "How it works"),
+              text: t(
+                "قياس فرق حرارة الظلة عن الهواء (T_canopy − T_air) كمؤشر لسلوك الثغور وإجهاد الشجرة.",
+                "Measuring the canopy-to-air temperature difference (T_canopy − T_air) as an indicator of stomatal behaviour and tree stress.",
+              ),
+            },
+            {
+              label: t("الهدف", "Goal"),
+              text: t(
+                "توفير «أداة ثقة» مرئية للمزارع تعكس استجابة النخلة الحقيقية، بدلاً من الاكتفاء بنماذج رقمية مجردة.",
+                "A visible “trust tool” for the farmer that reflects the palm's real response, rather than relying on abstract models alone.",
+              ),
+            },
+          ]}
+        />
+      </div>
+    </div>
+  );
+}
+
+function StepMath({ t }: { t: T }) {
+  const rows = [
+    {
+      q: t("هل الحوض جاف؟", "Is the basin dry?"),
+      a: t("النبات: ترتفع حرارة الأوراق بسبب غلق الثغور نتيجة العطش.", "Plant: leaf temperature rises as stomata close from thirst."),
+      b: t("الهيدروليك: سرعة تسرب عالية جداً في النبضة الأولى (Δθ كبيرة).", "Hydraulics: very fast infiltration in the first pulse (large Δθ)."),
+    },
+    {
+      q: t("هل الحوض رطب؟", "Is the basin wet?"),
+      a: t("النبات: تبرد الأوراق طبيعياً عبر النتح؛ الشجرة غير مُجهدة.", "Plant: leaves cool normally through transpiration; the tree is not stressed."),
+      b: t("الهيدروليك: سرعة تسرب منخفضة جداً بسبب امتلاء الفراغات. يحوّل النظام دورة المياه فوراً إلى حوض أشد حاجة.", "Hydraulics: very slow infiltration as pores are full. The system immediately redirects the water turn to a needier basin."),
+    },
+    {
+      q: t("هل يحتاج غسيل أملاح؟", "Does it need salt leaching?"),
+      a: t("الدفتر الرقمي: تتبّع تراكم الأملاح (EC) بالاستعانة بصور الأقمار الصناعية (Sentinel-2).", "Digital ledger: tracks salt build-up (EC) with help from Sentinel-2 satellite imagery."),
+      b: t("تنفيذ نبضة غسيل مخصصة فقط عند الحاجة القصوى.", "A dedicated leaching pulse only when truly needed."),
+    },
   ];
   return (
     <div>
-      <Kicker>{t("داخل المحاكي", "Inside the simulator")}</Kicker>
-      <h2 className="mt-2 text-2xl font-extrabold text-pn-navy sm:text-4xl">{t("جرّب القرار قبل أن يُتخذ في الحقل", "Test the decision before it reaches the field")}</h2>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((it) => (
-          <Card key={it.title} icon={it.icon} tone={it.tone} title={it.title} text={it.text} />
-        ))}
+      <Kicker>{t("03 · الرياضيات خلف «النبضة» · 04 · حالة كل حوض", "03 · The maths behind the “pulse” · 04 · Each basin's state")}</Kicker>
+      <div className="mt-3 grid items-start gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <div>
+          <h2 className="text-2xl font-extrabold text-pn-navy sm:text-3xl">{t("معادلة Green-Ampt", "The Green-Ampt equation")}</h2>
+          <p className="mt-2 text-[14px] leading-7 text-pn-ink/75">
+            {t("لحساب معدل التسرب وعمق جبهة البلل Z(t) لحظياً:", "To compute the infiltration rate and the wetting-front depth Z(t) in real time:")}
+          </p>
+          <div dir="ltr" className="mt-4 rounded-2xl bg-[#F3EEE4] px-6 py-6 text-center font-serif text-pn-navy italic shadow-inner">
+            <span className="inline-flex items-center gap-2 text-2xl sm:text-3xl">
+              f(t) = K<sub className="text-base">s</sub>
+              <span className="text-4xl font-light not-italic">(</span>1 +
+              <span className="inline-flex flex-col items-center leading-tight">
+                <span>ψ · Δθ</span>
+                <span className="w-full border-t-2 border-pn-navy/70" />
+                <span>Z(t)</span>
+              </span>
+              <span className="text-4xl font-light not-italic">)</span>
+            </span>
+            <div className="mt-3 text-[11px] font-sans text-pn-muted not-italic">
+              {t("معدل التسرب كدالة لعمق جبهة البلل", "Infiltration rate as a function of wetting-front depth")}
+            </div>
+          </div>
+          <p className="mt-4 text-[13px] leading-7 text-pn-ink/80">
+            <span className="font-bold text-pn-navy">{t("دور ESP32:", "The ESP32's role:")}</span>{" "}
+            {t(
+              "يراقب سرعة امتصاص التربة للماء في النبضة الأولى، وبناءً عليها يحدد هندسياً وبدقة وقت إيقاف الصمام قبل تسرب المياه إلى الأعماق.",
+              "It watches how fast the soil absorbs water in the first pulse and from that determines precisely when to close the valve before water drains to depth.",
+            )}
+          </p>
+        </div>
+        <div>
+          <h2 className="text-2xl font-extrabold text-pn-navy sm:text-3xl">{t("كيف يحدد النظام حالة كل حوض؟", "How does the system read each basin?")}</h2>
+          <div className="mt-3 overflow-hidden rounded-2xl border border-pn-line bg-white">
+            <table className="w-full text-[12.5px] leading-6">
+              <thead>
+                <tr className="bg-pn-navy text-white">
+                  <th className="px-3 py-2 text-start font-semibold">{t("السؤال", "Question")}</th>
+                  <th className="px-3 py-2 text-start font-semibold">{t("المؤشر الأول", "First indicator")}</th>
+                  <th className="px-3 py-2 text-start font-semibold">{t("المؤشر الثاني", "Second indicator")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r, i) => (
+                  <tr key={r.q} className={i % 2 ? "bg-[#FAFAF7]" : ""}>
+                    <td className="px-3 py-2.5 align-top font-bold text-pn-navy">{r.q}</td>
+                    <td className="px-3 py-2.5 align-top text-pn-ink/80">{r.a}</td>
+                    <td className="px-3 py-2.5 align-top text-pn-ink/80">{r.b}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StepValue({ t }: { t: T }) {
+  const steps = [
+    t("توزيع المياه بين الأحواض بعدالة حسب احتياج كل حوض والكمية المتاحة.", "Share water fairly across basins by each basin's need and the amount available."),
+    t("إعادة جدولة الري تلقائياً إذا قلّت المياه أو حدث عطل.", "Reschedule automatically if water runs short or something fails."),
+    t("الاستمرار بالري على دفعات قصيرة ومراقبة الملوحة.", "Keep irrigating in short pulses while monitoring salinity."),
+    t("قياس النتائج ومقارنتها بالري التقليدي لإثبات فائدة النظام.", "Measure results and compare them with traditional irrigation to prove the benefit."),
+  ];
+  return (
+    <div>
+      <Kicker>{t("06 · آلية عمل النظام · 07 · ما يميزنا · 05 · الجانب التجاري", "06 · How it works · 07 · What sets us apart · 05 · Business")}</Kicker>
+      <div className="mt-3 grid gap-6 lg:grid-cols-2">
+        <div>
+          <h2 className="text-2xl font-extrabold text-pn-navy sm:text-3xl">{t("آلية عمل النظام", "How the system works")}</h2>
+          <ol className="mt-4 divide-y divide-pn-line overflow-hidden rounded-2xl border border-pn-line bg-white">
+            {steps.map((s, i) => (
+              <li key={i} className="flex items-center gap-4 px-4 py-3.5">
+                <span className="num flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-pn-forest text-base font-extrabold text-white">{i + 1}</span>
+                <span className="text-[13.5px] leading-6 text-pn-ink/85">{s}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+        <div className="space-y-4">
+          <div className="rounded-2xl bg-[#F3EEE4] p-5">
+            <div className="text-[12px] text-pn-muted">{t("ليس مجرد نظام يعرف متى يسقي،", "Not just a system that knows when to irrigate,")}</div>
+            <div className="mt-1 text-xl leading-9 font-extrabold text-pn-navy">
+              {t("بل يدير المياه المحدودة بين عدة أحواض، ويحدد الأولوية والكمية المناسبة لكل حوض.", "but one that manages limited water across several basins, setting the right priority and amount for each.")}
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Card
+              icon={QrCode}
+              tone="#176B50"
+              title={t("ملصق بصمة المياه QR", "Water-footprint QR label")}
+              text={t(
+                "يحمل كل صندوق تمر يخرج من المزرعة شهادة موثّقة لمعدل استهلاك المياه (م³/كغ)، مما يجذب المشترين الدوليين الداعمين للاستدامة، حتى مع كون المياه مجانية محلياً.",
+                "Every box of dates leaving the farm carries a verified water-use figure (m³/kg), attracting sustainability-minded international buyers even though water is free locally.",
+              )}
+            />
+            <Card
+              icon={Zap}
+              tone="#D9A441"
+              title={t("عائد الكربون", "Carbon return")}
+              text={t(
+                "كل متر مكعب لا يُضخ — عند عمق رفع 150 م — يوفر نحو 0.8 كيلوواط/ساعة من الطاقة.",
+                "Every cubic metre not pumped, from a 150 m lift, saves about 0.8 kWh of energy.",
+              )}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -254,17 +416,32 @@ function StepResults({ t }: { t: T }) {
       color: "#DC5B52",
     },
   ];
+  const proto = [
+    { n: 3, label: t("أحواض", "basins") },
+    { n: 1, label: t("مصدر مياه مشترك", "shared water source") },
+    { n: 2, label: t("نظامان للمقارنة", "systems compared") },
+  ];
   return (
     <div>
-      <Kicker>{t("النتائج", "Results")}</Kicker>
-      <h2 className="mt-2 text-2xl font-extrabold text-pn-navy sm:text-4xl">{t("Pulse مقابل الري التقليدي", "Pulse vs traditional irrigation")}</h2>
-      <p className="mt-3 max-w-3xl text-[15px] leading-8 text-pn-ink/75">
+      <Kicker>{t("08 · النموذج الأولي", "08 · The prototype")}</Kicker>
+      <h2 className="mt-2 text-2xl font-extrabold text-pn-navy sm:text-4xl">
+        {t("نختبر الفرق بين الري التقليدي ونظام Pulse مباشرةً", "We test the difference between traditional irrigation and Pulse, live")}
+      </h2>
+      <div className="mt-5 grid max-w-xl grid-cols-3 gap-4">
+        {proto.map((p) => (
+          <div key={p.label} className="border-t-2 border-pn-forest pt-2">
+            <div className="num text-3xl font-extrabold text-pn-forest">{p.n}</div>
+            <div className="text-xs text-pn-ink/75">{p.label}</div>
+          </div>
+        ))}
+      </div>
+      <p className="mt-6 text-[13px] leading-7 text-pn-ink/70">
         {t(
-          "أرقام محسوبة الآن من محرك المحاكاة نفسه، لأسبوع صيفي نموذجي في الأحساء، تحت نفس الطقس ونفس كمية المياه للنظامين.",
-          "Figures computed right now by the same simulation engine, for a typical summer week in Al-Ahsa, under identical weather and water for both systems.",
+          "نتائج المحاكي لأسبوع صيفي نموذجي في الأحساء، محسوبة الآن من محرك المحاكاة تحت نفس الطقس ونفس كمية المياه للنظامين:",
+          "Simulator results for a typical summer week in Al-Ahsa, computed now by the simulation engine under identical weather and water for both systems:",
         )}
       </p>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {tiles.map((x, i) => (
           <div key={i} className="rounded-2xl border border-pn-line bg-white p-5 shadow-[0_10px_30px_-18px_rgba(16,42,56,0.25)]">
             <div className="text-4xl font-extrabold" style={{ color: x.color }}>
@@ -275,7 +452,7 @@ function StepResults({ t }: { t: T }) {
           </div>
         ))}
       </div>
-      <div className="mt-8 flex flex-wrap items-center gap-3">
+      <div className="mt-7 flex flex-wrap items-center gap-3">
         <Link
           href={SIMULATOR}
           className="inline-flex items-center gap-2 rounded-2xl bg-pn-forest px-6 py-3.5 text-base font-bold text-white shadow-[0_14px_30px_-12px_rgba(23,107,80,0.7)] transition hover:-translate-y-0.5 hover:bg-[#125a43]"
@@ -305,7 +482,7 @@ function Kicker({ children }: { children: React.ReactNode }) {
   return <span className="text-xs font-bold tracking-wider text-pn-gold uppercase">{children}</span>;
 }
 
-const STEP_COUNT = 5;
+const STEP_COUNT = 6;
 
 function OnboardingInner() {
   const { t, dir, lang } = useLang();
@@ -329,10 +506,11 @@ function OnboardingInner() {
 
   const titles = [
     t("مرحباً", "Welcome"),
-    t("التحدي", "Challenge"),
-    t("كيف يعمل", "How it works"),
-    t("داخل المحاكي", "The simulator"),
-    t("النتائج", "Results"),
+    t("المشكلة", "Problem"),
+    t("الطبقات الثلاث", "Three layers"),
+    t("النبضة", "The pulse"),
+    t("القيمة", "Value"),
+    t("النموذج الأولي", "Prototype"),
   ];
   const BackIcon = dir === "rtl" ? ArrowRight : ArrowLeft;
   const NextIcon = dir === "rtl" ? ArrowLeft : ArrowRight;
@@ -363,10 +541,11 @@ function OnboardingInner() {
       <main className="flex flex-1 items-center px-5 py-6 sm:px-10">
         <div key={step} className="pulse-slide mx-auto w-full max-w-6xl">
           {step === 0 && <StepWelcome t={t} />}
-          {step === 1 && <StepChallenge t={t} />}
-          {step === 2 && <StepHow t={t} dir={dir} />}
-          {step === 3 && <StepInside t={t} />}
-          {step === 4 && <StepResults t={t} />}
+          {step === 1 && <StepProblem t={t} />}
+          {step === 2 && <StepLayers t={t} />}
+          {step === 3 && <StepMath t={t} />}
+          {step === 4 && <StepValue t={t} />}
+          {step === 5 && <StepResults t={t} />}
         </div>
       </main>
 
