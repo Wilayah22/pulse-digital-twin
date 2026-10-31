@@ -7,6 +7,11 @@ services:
     buildCommand: npm ci && npm run build
     staticPublishPath: out
     autoDeploy: true
+    routes:
+      # /simulator without the trailing slash goes to the exported /simulator/ page.
+      - type: redirect
+        source: /simulator
+        destination: /simulator/
     envVars:
       - key: NODE_VERSION
         value: "22"

@@ -2,6 +2,7 @@
 
 import { CalendarDays, CircleUserRound, MapPin } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { SIMULATION_DAYS, SITE } from "../engine";
 import { useSimulation } from "../state/SimulationProvider";
 import { weatherInfo } from "../weather/codes";
@@ -61,9 +62,9 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-30 flex h-[80px] items-center gap-4 border-b border-pn-line bg-white px-4 text-pn-navy shadow-[0_2px_12px_rgba(16,42,56,0.06)] lg:px-6">
-      <div className="flex items-center gap-2.5">
+      <Link href="/" className="flex items-center gap-2.5" aria-label={t("العودة إلى التعريف بالمشروع", "Back to the project introduction")}>
         <PulseLogo />
-      </div>
+      </Link>
       <div className="hidden h-9 w-px bg-pn-line sm:block" />
       <div className="hidden leading-tight sm:block">
         <h1 className="text-lg font-bold">{t("التوأم الرقمي", "Digital Twin")}</h1>

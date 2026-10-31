@@ -19,7 +19,6 @@ import { Card, CardHeader, Skeleton } from "./ui";
 import { WeatherForecast } from "./WeatherForecast";
 import { ImpactPanel } from "./ImpactPanel";
 import { TourProvider } from "./PresentationTour";
-import { Splash } from "./Splash";
 
 function Charts() {
   const { result, selectedDay, setSelectedDay, strategy } = useSimulation();
@@ -75,7 +74,6 @@ export function Dashboard() {
     <LanguageProvider>
       <SimulationProvider>
         <TourProvider>
-          <Splash />
           <Shell />
         </TourProvider>
       </SimulationProvider>
