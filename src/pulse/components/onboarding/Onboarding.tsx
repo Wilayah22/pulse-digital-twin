@@ -249,7 +249,7 @@ function StepLayers({ t }: { t: T }) {
   );
 }
 
-function StepMath({ t }: { t: T }) {
+function StepMath({ t, dir }: { t: T; dir: "rtl" | "ltr" }) {
   const rows = [
     {
       q: t("هل الحوض جاف؟", "Is the basin dry?"),
@@ -283,13 +283,32 @@ function StepMath({ t }: { t: T }) {
               <span className="inline-flex flex-col items-center leading-tight">
                 <span>ψ · Δθ</span>
                 <span className="w-full border-t-2 border-pn-navy/70" />
-                <span>Z(t)</span>
+                <span>F(t)</span>
               </span>
               <span className="text-4xl font-light not-italic">)</span>
             </span>
-            <div className="mt-3 text-[11px] font-sans text-pn-muted not-italic">
-              {t("معدل التسرب كدالة لعمق جبهة البلل", "Infiltration rate as a function of wetting-front depth")}
+            <div className="mt-3 text-lg sm:text-xl">
+              Z(t) = <span className="inline-flex flex-col items-center align-middle leading-tight">
+                <span>F(t)</span>
+                <span className="w-full border-t-2 border-pn-navy/70" />
+                <span>Δθ</span>
+              </span>
             </div>
+            <dl dir={dir} className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1 text-start font-sans text-[11px] leading-5 text-pn-muted not-italic">
+              {[
+                ["F(t)", t("كمية الماء المتسربة (مم)", "cumulative infiltration (mm)")],
+                ["Z(t)", t("عمق جبهة البلل", "wetting-front depth")],
+                ["Δθ = θs − θi", t("فرق الرطوبة الحجمية", "volumetric moisture deficit")],
+                ["ψ", t("شد جبهة البلل", "wetting-front suction")],
+              ].map(([sym, desc]) => (
+                <div key={sym} className="flex items-baseline gap-1.5">
+                  <dt dir="ltr" className="font-serif text-[12px] font-semibold text-pn-navy italic">
+                    {sym}
+                  </dt>
+                  <dd>{desc}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
           <p className="mt-4 text-[13px] leading-7 text-pn-ink/80">
             <span className="font-bold text-pn-navy">{t("دور ESP32:", "The ESP32's role:")}</span>{" "}
@@ -543,7 +562,7 @@ function OnboardingInner() {
           {step === 0 && <StepWelcome t={t} />}
           {step === 1 && <StepProblem t={t} />}
           {step === 2 && <StepLayers t={t} />}
-          {step === 3 && <StepMath t={t} />}
+          {step === 3 && <StepMath t={t} dir={dir} />}
           {step === 4 && <StepValue t={t} />}
           {step === 5 && <StepResults t={t} />}
         </div>
