@@ -364,6 +364,15 @@ export function ReportDocument({
               `الطبقة الهيدروليكية: يُقسَّم ري كل حوض إلى نبضات لا تتجاوز ${MAX_PULSE_MM} مم، ويُحسب تسرب كل نبضة وعمق جبهة البلل بمعادلة Green-Ampt (Ks = ${fmt(GA_SOIL_KS, 1)} مم/س، ψ = ${GA_SOIL.psiMm} مم، تربة رملية طميية). تتناوب النبضات على مصدر مشترك بتدفق ${SOURCE_FLOW_M3H} م³/س حسب الأولوية، مع راحة ${PULSE_REST_MIN} دقيقة بين نبضات الحوض نفسه.`,
               `Hydraulic layer: each basin's irrigation is split into pulses of at most ${MAX_PULSE_MM} mm; infiltration and wetting-front depth follow Green-Ampt (Ks = ${fmt(GA_SOIL_KS, 1)} mm/h, ψ = ${GA_SOIL.psiMm} mm, sandy loam). Pulses alternate by priority on a shared ${SOURCE_FLOW_M3H} m³/h source, with a ${PULSE_REST_MIN}-minute rest between pulses of the same basin.`,
             )}
+            <div dir="ltr" className="my-1.5 flex flex-wrap items-center justify-center gap-x-8 gap-y-1 rounded-md bg-[#F4F1EA] px-3 py-1.5 font-serif text-[12px] italic text-pn-navy">
+              <span>f(t) = K<sub>s</sub> (1 + ψ·Δθ / F(t))</span>
+              <span>F − ψ·Δθ · ln(1 + F / (ψ·Δθ)) = K<sub>s</sub> · t</span>
+              <span>Z(t) = F(t) / Δθ</span>
+            </div>
+            {t(
+              "حيث F(t) كمية الماء المتسربة (مم)، Z(t) عمق جبهة البلل، Δθ = θs − θi فرق الرطوبة الحجمية، ψ شد جبهة البلل.",
+              "where F(t) is cumulative infiltration (mm), Z(t) the wetting-front depth, Δθ = θs − θi the volumetric moisture deficit, and ψ the wetting-front suction.",
+            )}
           </li>
           <li>
             {t(
