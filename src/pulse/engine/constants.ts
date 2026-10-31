@@ -1,3 +1,4 @@
+import type { GreenAmptSoil } from "./greenAmpt";
 import type { BasinConfig, CropParams, SimulationInputs, SoilParams } from "./types";
 
 /** Al-Ahsa Oasis (Hofuf), approximate. */
@@ -42,10 +43,24 @@ export const IRRIGATION_TRIGGER = 0.4;
 export const MIN_EFFECTIVE_RAIN = 2;
 export const EFFECTIVE_RAIN_FACTOR = 0.8;
 
+/**
+ * Green-Ampt parameters for sandy loam (Rawls, Brakensiek & Miller, 1983): Ks ≈ 10.9 mm/h, ψ ≈ 110 mm, θs ≈ 0.41.
+ * All three basins share one soil, so the first-pulse infiltration speed reflects dryness alone, which is the
+ * step-test indicator. In the field Ks is inferred per basin by the step test.
+ */
+export const GA_SOIL: Omit<GreenAmptSoil, "ksMmH"> = { psiMm: 110, thetaS: 0.41 };
+
+/** Flow of the shared water source feeding one valve at a time (m³/h). Demonstration value. */
+export const SOURCE_FLOW_M3H = 8;
+/** Largest net depth per irrigation pulse (mm), keeping ponding shallow. */
+export const MAX_PULSE_MM = 20;
+/** Redistribution rest before the same basin receives its next pulse (min). */
+export const PULSE_REST_MIN = 20;
+
 export const BASINS: BasinConfig[] = [
-  { id: "A", name: "الحوض A", area: 260, initialDepletion: 78, initialEce: 5.2, lastIrrigationDaysAgo: 4 },
-  { id: "B", name: "الحوض B", area: 240, initialDepletion: 45, initialEce: 4.4, lastIrrigationDaysAgo: 2 },
-  { id: "C", name: "الحوض C", area: 250, initialDepletion: 22, initialEce: 3.6, lastIrrigationDaysAgo: 1 },
+  { id: "A", name: "الحوض A", area: 260, initialDepletion: 78, initialEce: 5.2, lastIrrigationDaysAgo: 4, ksMmH: 10.9 },
+  { id: "B", name: "الحوض B", area: 240, initialDepletion: 45, initialEce: 4.4, lastIrrigationDaysAgo: 2, ksMmH: 10.9 },
+  { id: "C", name: "الحوض C", area: 250, initialDepletion: 22, initialEce: 3.6, lastIrrigationDaysAgo: 1, ksMmH: 10.9 },
 ];
 
 export const INPUT_LIMITS = {

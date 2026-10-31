@@ -1,6 +1,8 @@
 // Pulse simulation engine: shared types.
 // Units: depths in mm, volumes in m³, areas in m², salinity in dS/m, wind in m/s at 2 m.
 
+import type { Pulse, ScheduledPulse } from "./greenAmpt";
+
 export type BasinId = "A" | "B" | "C";
 
 /** Interface language for generated text (recommendations). */
@@ -39,6 +41,8 @@ export interface BasinConfig {
   initialEce: number;
   /** Days since this basin was last irrigated before the simulation starts. */
   lastIrrigationDaysAgo: number;
+  /** Saturated hydraulic conductivity Ks (mm/h), as inferred by the hydraulic step test. */
+  ksMmH: number;
 }
 
 export type DustLevel = "none" | "moderate" | "severe";
@@ -111,6 +115,10 @@ export interface BasinDayState {
   priority: PriorityLevel;
   requestVolume: number; // m³ requested by the allocator (Pulse only, 0 for traditional)
   health: BasinHealth;
+  /** Irrigation pulses applied this day (empty when the valve stays closed). */
+  pulses: Pulse[];
+  /** Deepest wetting front reached by an irrigation pulse (mm); leaching pulses excluded. */
+  wettingFrontMm: number;
 }
 
 export interface BasinResult {
@@ -140,6 +148,8 @@ export interface StrategyResult {
   basins: BasinResult[];
   dailyUse: number[]; // m³ per day, all basins
   dailyStock: number[]; // m³ in the reservoir before each day's allocation
+  /** Valve schedule on the shared source for each day (minutes from the start of the turn). */
+  schedules: ScheduledPulse[][];
   totalUsed: number;
   reservoirEnd: number; // m³ left unused
   avgMoisture: number; // % of TAW, averaged over basins and days (end of day)

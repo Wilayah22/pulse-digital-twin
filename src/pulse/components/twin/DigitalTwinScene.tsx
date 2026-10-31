@@ -279,12 +279,12 @@ function Pipes({ views, delayed }: { views: BasinDayView[]; delayed: boolean }) 
             <circle cx={x} cy={PIPE_Y} r={10} fill="#15557e" stroke="#0f3f5f" strokeWidth={1.5} />
             {open && (
               <path
-                className={`pulse-flow ${flowCls ?? ""}`}
+                className={`pulse-flow ${flowCls ?? ""} ${v.pulses.length > 1 ? "pulse-burst" : ""}`}
                 d={`M${x},${PIPE_Y} L${x},${inlet}`}
                 stroke="#d9f4ff"
                 strokeWidth={3}
                 strokeLinecap="round"
-                style={{ animationDuration: flowDuration(v.irrigation) }}
+                style={{ animationDuration: v.pulses.length > 1 ? `${flowDuration(v.irrigation)}, 3.2s` : flowDuration(v.irrigation) }}
               />
             )}
             <Valve x={x} y={PIPE_Y - 34} open={open} />

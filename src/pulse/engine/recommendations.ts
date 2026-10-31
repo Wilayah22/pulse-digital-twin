@@ -1,7 +1,7 @@
 // Turns simulation results into explained recommendations. Every statement is derived from computed values;
 // nothing is emitted unless the numbers support it.
 
-import { IRRIGATION_TRIGGER } from "./constants";
+import { IRRIGATION_TRIGGER, SOIL } from "./constants";
 import type { BasinId, CropParams, Lang, Recommendation, SimulationResult } from "./types";
 
 type Partial = Omit<SimulationResult, "recommendations">;
@@ -114,6 +114,31 @@ export function buildRecommendations(r: Partial, flags: Flags, crop: CropParams,
         impact: T(`ترتفع الرطوبة من ${f(d.moistureBefore, 0)}% إلى ${f(d.moistureAfter, 0)}%.`, `Moisture rises from ${f(d.moistureBefore, 0)}% to ${f(d.moistureAfter, 0)}%.`),
       });
     }
+  }
+
+  // Hydraulic layer: today's order and pulse plan on the shared source.
+  const today = pulse.schedules[0] ?? [];
+  const irrigationEvents = today.filter((e) => !e.leaching);
+  if (irrigationEvents.length > 0) {
+    const seq = today.map((e) => e.basin).filter((b, i, a) => i === 0 || a[i - 1] !== b);
+    const valveMin = today.reduce((a, e) => a + e.end - e.start, 0);
+    const front = Math.max(...pulse.basins.map((b) => b.days[0].wettingFrontMm));
+    const rootMm = SOIL.rootDepth * 1000;
+    recs.push({
+      id: "pulse-order",
+      kind: "schedule",
+      severity: "info",
+      action: T(`ترتيب الري اليوم: ${seq.join(" ثم ")}`, `Today's irrigation order: ${seq.join(" → ")}`),
+      reason: T(
+        `${irrigationEvents.length} نبضات قصيرة (حتى 20 مم لكل نبضة) بالتناوب حسب الأولوية؛ بينما يتسرب الماء في حوض يُفتح صمام الحوض التالي على المصدر المشترك.`,
+        `${irrigationEvents.length} short pulses (up to 20 mm each), interleaved by priority; while one basin soaks, the next basin's valve opens on the shared source.`,
+      ),
+      allocation: T(`${f(valveMin, 0)} دقيقة فتح صمامات · ${f(pulse.dailyUse[0])} م³`, `${f(valveMin, 0)} min of valve time · ${f(pulse.dailyUse[0])} m³`),
+      impact: T(
+        `أعمق جبهة بلل ${f(front, 0)} مم من ${rootMm} مم: الماء يبقى في منطقة الجذور ولا يتسرب للأعماق.`,
+        `Deepest wetting front ${f(front, 0)} mm of ${rootMm} mm: water stays in the root zone instead of draining deep.`,
+      ),
+    });
   }
 
   // Rationing across the period (beyond day 1).

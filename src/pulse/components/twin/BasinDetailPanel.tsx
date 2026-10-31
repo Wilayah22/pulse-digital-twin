@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarClock, Droplets, FlaskConical, Gauge, Sprout, TrendingUp, X } from "lucide-react";
+import { Activity, CalendarClock, Droplets, FlaskConical, Gauge, Layers, Sprout, Timer, TrendingUp, X } from "lucide-react";
 import { CROP } from "../../engine";
 import { useLang } from "../../i18n/LanguageProvider";
 import type { BasinDayView } from "../../state/selectors";
@@ -24,6 +24,9 @@ export function BasinDetailPanel({ view: v, onClose }: { view: BasinDayView; onC
   const prio = PRIORITY_META[v.priority];
   const { t, dir, arrow } = useLang();
   const m3 = t("م³", "m³");
+  const irrigationPulses = v.pulses.filter((p) => !p.leaching);
+  const leachPulse = v.pulses.find((p) => p.leaching);
+  const first = irrigationPulses[0] ?? leachPulse;
   return (
     <div
       dir={dir}
@@ -86,6 +89,59 @@ export function BasinDetailPanel({ view: v, onClose }: { view: BasinDayView; onC
         <Row icon={<TrendingUp size={14} />} label={t("الطلب المتوقع", "Predicted demand")}
           tip={t("مجموع الاحتياج المائي المتوقع من هذا اليوم حتى نهاية الفترة، وفق توقعات ET0.", "Total forecast water need from this day to the end of the period, based on the ET0 forecast.")}>
           <span className="num">{fmt(v.predictedDemand)}</span> <span className="text-[11px] font-normal text-pn-muted">{m3}</span>
+        </Row>
+        <Row
+          icon={<Timer size={14} />}
+          label={t("نبضات اليوم", "Pulses today")}
+          tip={t(
+            "عدد النبضات وزمن فتح الصمام. كل نبضة لا تتجاوز 20 مم، ويرتاح الحوض بينها حتى يتسرب الماء.",
+            "Number of pulses and valve-open time. Each pulse is at most 20 mm, and the basin rests between pulses while water soaks in.",
+          )}
+        >
+          {irrigationPulses.length ? (
+            <>
+              <span className="num">{irrigationPulses.length}</span> ×{" "}
+              <span className="num">{fmt(irrigationPulses.reduce((a, p) => a + p.openMin, 0) / irrigationPulses.length, 0)}</span>{" "}
+              <span className="text-[11px] font-normal text-pn-muted">{t("د", "min")}</span>
+              {leachPulse && <span className="text-[11px] font-normal text-pn-gold"> + {t("غسيل", "leach")}</span>}
+            </>
+          ) : (
+            "—"
+          )}
+        </Row>
+        <Row
+          icon={<Activity size={14} />}
+          label={t("اختبار الخطوة", "Step test")}
+          tip={t(
+            "سرعة تسرب الماء في أول 5 مم من النبضة الأولى (من هبوط الضغط). سرعة عالية = تربة جافة (Δθ كبيرة)؛ منخفضة = رطبة.",
+            "Infiltration speed over the first 5 mm of the first pulse (from the pressure drop). Fast = dry soil (large Δθ); slow = wet.",
+          )}
+        >
+          {first ? (
+            <>
+              <span className="num">{fmt(first.startRateMmH, 0)}</span> <span className="text-[11px] font-normal text-pn-muted">{t("مم/س", "mm/h")}</span>
+              <span className="num text-[11px] font-normal text-pn-muted"> · Δθ {fmt(first.deltaTheta, 2)}</span>
+            </>
+          ) : (
+            "—"
+          )}
+        </Row>
+        <Row
+          icon={<Layers size={14} />}
+          label={t("جبهة البلل", "Wetting front")}
+          tip={t(
+            "أعمق نقطة تصلها جبهة البلل في نبضات الري (Green-Ampt: Z = F / Δθ)، مقارنةً بعمق منطقة الجذور.",
+            "Deepest wetting front reached by irrigation pulses (Green-Ampt: Z = F / Δθ), compared with the root-zone depth.",
+          )}
+        >
+          {first ? (
+            <>
+              <span className="num">{fmt(v.wettingFrontMm, 0)}</span> <span className="text-[11px] font-normal text-pn-muted">{t("مم من", "mm of")}</span>{" "}
+              <span className="num">{fmt(v.rootDepthMm, 0)}</span>
+            </>
+          ) : (
+            "—"
+          )}
         </Row>
       </div>
       <div className="mt-2 rounded-xl bg-pn-bg px-3 py-2 text-xs text-pn-deep">

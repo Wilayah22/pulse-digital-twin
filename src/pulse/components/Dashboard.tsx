@@ -1,12 +1,13 @@
 "use client";
 
-import { ChartColumn, ChartLine, ChartPie, FlaskConical } from "lucide-react";
+import { ChartColumn, ChartLine, ChartPie, FlaskConical, Timer } from "lucide-react";
 import { LanguageProvider, useLang } from "../i18n/LanguageProvider";
 import { SimulationProvider, useSimulation } from "../state/SimulationProvider";
 import { AllocationDonut } from "./charts/AllocationDonut";
 import { MoistureChart } from "./charts/MoistureChart";
 import { SalinityChart } from "./charts/SalinityChart";
 import { WaterConsumptionChart } from "./charts/WaterConsumptionChart";
+import { PulseSchedule } from "./charts/PulseSchedule";
 import { BasinStatusPanel } from "./BasinStatusPanel";
 import { ControlPanel } from "./ControlPanel";
 import { Header } from "./Header";
@@ -19,6 +20,24 @@ import { Card, CardHeader, Skeleton } from "./ui";
 import { WeatherForecast } from "./WeatherForecast";
 import { ImpactPanel } from "./ImpactPanel";
 import { TourProvider } from "./PresentationTour";
+
+function ScheduleCard() {
+  const { result, selectedDay } = useSimulation();
+  const { t } = useLang();
+  return (
+    <Card id="pulses" className="pb-4">
+      <CardHeader
+        title={t("جدول النبضات اليومي", "Daily pulse schedule")}
+        icon={<Timer size={18} />}
+        subtitle={t(
+          `اليوم ${selectedDay} · أي حوض أولاً، وبأي ترتيب، ولأي مدة على مصدر المياه المشترك`,
+          `Day ${selectedDay} · which basin first, in what order, for how long on the shared source`,
+        )}
+      />
+      <div className="px-4 pt-3">{result ? <PulseSchedule result={result} selectedDay={selectedDay} /> : <Skeleton className="h-[220px]" />}</div>
+    </Card>
+  );
+}
 
 function Charts() {
   const { result, selectedDay, setSelectedDay, strategy } = useSimulation();
@@ -102,6 +121,7 @@ function Shell() {
                 </Card>
                 <ScenarioPresets />
                 <KpiCards />
+                <ScheduleCard />
                 <Charts />
                 <ImpactPanel />
                 <div className="grid grid-cols-1 gap-5">

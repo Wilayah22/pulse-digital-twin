@@ -347,6 +347,26 @@ html[data-presenting] #twin > div > div.relative {
   }
 }
 
+/* Valve opening and closing pulse after pulse */
+@keyframes pulse-burst {
+  0%,
+  55% {
+    opacity: 1;
+  }
+  65%,
+  90% {
+    opacity: 0.08;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+path.pulse-flow.pulse-burst {
+  animation:
+    pulse-flow 1.2s linear infinite,
+    pulse-burst 3.2s ease-in-out infinite;
+}
+
 /* Onboarding step transition */
 @keyframes pulse-slide {
   from {
@@ -363,7 +383,8 @@ html[data-presenting] #twin > div > div.relative {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pulse-slide {
+  .pulse-slide,
+  path.pulse-flow.pulse-burst {
     animation: none !important;
   }
   .pulse-flow,

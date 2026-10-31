@@ -1,7 +1,8 @@
 // Runs Pulse and the traditional baseline side by side under identical weather and water supply.
 
 import { allocatePulse, allocateTraditional, grossVolume, priorityLevel, priorityScore, type BasinSnapshot } from "./allocation";
-import { APPLICATION_EFFICIENCY, BASINS, CROP, SIMULATION_DAYS, SOIL } from "./constants";
+import { APPLICATION_EFFICIENCY, BASINS, CROP, GA_SOIL, MAX_PULSE_MM, PULSE_REST_MIN, SIMULATION_DAYS, SOIL, SOURCE_FLOW_M3H } from "./constants";
+import { planPulses, scheduleTurn, type Pulse, type ScheduledPulse } from "./greenAmpt";
 import { cropET } from "./et0";
 import { buildRecommendations } from "./recommendations";
 import { leachingRequirement, salinityStressCoefficient, saturationWater, updateSoilSalinity } from "./salinity";
@@ -92,6 +93,7 @@ function runStrategy(
   let outageDetected = false;
   const dailyUse: number[] = [];
   const dailyStock: number[] = [];
+  const schedules: ScheduledPulse[][] = [];
   const flags = {
     rationedDays: [] as number[],
     leachingWithheldDays: [] as number[],
@@ -179,6 +181,39 @@ function runStrategy(
     stock = Math.max(0, stock - used);
     dailyUse.push(used);
 
+    // Hydraulic layer: turn each basin's allocation into valve pulses and sequence them on the shared source.
+    // Pulse applies short Green-Ampt pulses in priority order; the traditional baseline floods each basin once.
+    const pulsesFor: Record<string, Pulse[]> = {};
+    states.forEach((s, i) => {
+      const id = s.cfg.id;
+      const net = (m3: number) => volumeToDepth(m3 * APPLICATION_EFFICIENCY, s.cfg.area);
+      pulsesFor[id] = planPulses({
+        irrigationMm: net(alloc[id] - leach[id]),
+        leachingMm: net(leach[id]),
+        depletionMm: pre[i].depletion,
+        area: s.cfg.area,
+        thetaFC: soil.thetaFC,
+        rootDepthMm: soil.rootDepth * 1000,
+        soil: { ...GA_SOIL, ksMmH: s.cfg.ksMmH },
+        flowM3H: SOURCE_FLOW_M3H,
+        efficiency: APPLICATION_EFFICIENCY,
+        maxPulseMm: strategy === "pulse" ? MAX_PULSE_MM : Number.POSITIVE_INFINITY,
+      });
+    });
+    const turnStart = preFrac * 24 * 60;
+    schedules.push(
+      scheduleTurn(
+        states.map((s, i) => ({
+          basin: s.cfg.id,
+          // Traditional rotation serves basins in a fixed order; Pulse serves the neediest first.
+          priority: strategy === "pulse" ? priorityScore(snapshots[i], crop) : states.length - i,
+          pulses: pulsesFor[s.cfg.id],
+        })),
+        strategy === "pulse" ? PULSE_REST_MIN : 0,
+        turnStart,
+      ),
+    );
+
     states.forEach((s, i) => {
       const id = s.cfg.id;
       const snap = snapshots[i];
@@ -213,6 +248,8 @@ function runStrategy(
         priority: priorityLevel(score),
         requestVolume: requests[id],
         health: classifyHealth(end, taw, raw),
+        pulses: pulsesFor[id],
+        wettingFrontMm: pulsesFor[id].filter((p) => !p.leaching).reduce((m, p) => Math.max(m, p.frontMm), 0),
       });
       s.depletion = end;
       s.ece = ece;
@@ -263,6 +300,7 @@ function runStrategy(
     basins,
     dailyUse,
     dailyStock,
+    schedules,
     totalUsed: dailyUse.reduce((a, b) => a + b, 0),
     reservoirEnd: stock,
     avgMoisture: allDays.reduce((a, d) => a + d.moistureEnd, 0) / Math.max(1, allDays.length),

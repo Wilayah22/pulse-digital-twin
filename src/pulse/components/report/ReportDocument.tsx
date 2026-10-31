@@ -8,6 +8,10 @@ import {
   SCENARIO_PRESETS,
   SITE,
   SOIL,
+  GA_SOIL,
+  MAX_PULSE_MM,
+  PULSE_REST_MIN,
+  SOURCE_FLOW_M3H,
   estimateImpact,
   percentChange,
   readilyAvailableWater,
@@ -24,6 +28,8 @@ import { WaterConsumptionChart } from "../charts/WaterConsumptionChart";
 import { fmt, shortDateAr } from "../ui";
 
 const noop = () => {};
+const GA_SOIL_KS = BASINS[0].ksMmH;
+const hm = (min: number) => `${Math.floor(min / 60)}:${String(Math.round(min % 60)).padStart(2, "0")}`;
 
 function Section({ title, children, breakBefore }: { title: string; children: React.ReactNode; breakBefore?: boolean }) {
   return (
@@ -244,6 +250,37 @@ export function ReportDocument({
         />
       </Section>
 
+      <Section title={t("5.1 جدول نبضات اليوم 1 (Pulse)", "5.1 Day 1 pulse schedule (Pulse)")}>
+        {p.schedules[0].length > 0 ? (
+          <Table
+            head={[
+              "#",
+              t("الحوض", "Basin"),
+              t("النوع", "Type"),
+              t("من", "From"),
+              t("إلى", "To"),
+              t("الحجم م³", "Volume m³"),
+            ]}
+            rows={p.schedules[0].map((e, k) => [
+              k + 1,
+              e.basin,
+              e.leaching ? t("غسيل أملاح", "Salt leaching") : t(`نبضة ${e.index + 1}`, `Pulse ${e.index + 1}`),
+              hm(e.start),
+              hm(e.end),
+              fmt(e.volumeM3),
+            ])}
+          />
+        ) : (
+          <p className="text-[11.5px]">{t("لا ري في اليوم الأول.", "No irrigation on day 1.")}</p>
+        )}
+        <p className="mt-1.5 text-[10.5px] text-pn-muted">
+          {t(
+            "الزمن من بداية المناوبة (ساعة:دقيقة). النبضات تتناوب على المصدر المشترك حسب الأولوية، ويُحسب زمن تسرب كل نبضة بمعادلة Green-Ampt.",
+            "Time from the start of the water turn (h:mm). Pulses alternate on the shared source by priority; each pulse's soak time follows Green-Ampt.",
+          )}
+        </p>
+      </Section>
+
       <Section title={t("6. الرطوبة والملوحة", "6. Moisture and salinity")}>
         <div className="grid grid-cols-2 gap-8 pe-6" dir="ltr">
           <MoistureChart result={result} strategy="pulse" selectedDay={-1} onSelectDay={noop} />
@@ -320,6 +357,12 @@ export function ReportDocument({
             {t(
               `ملوحة مياه الري ECw منفصلة عن ملوحة التربة ECe؛ حد تحمّل النخيل ECe = ${CROP.eceThreshold} dS/m (FAO-29). متطلب الغسيل بمعادلة رودز.`,
               `Irrigation water salinity ECw is tracked separately from soil ECe; date-palm tolerance ECe = ${CROP.eceThreshold} dS/m (FAO-29). Leaching requirement via the Rhoades equation.`,
+            )}
+          </li>
+          <li>
+            {t(
+              `الطبقة الهيدروليكية: يُقسَّم ري كل حوض إلى نبضات لا تتجاوز ${MAX_PULSE_MM} مم، ويُحسب تسرب كل نبضة وعمق جبهة البلل بمعادلة Green-Ampt (Ks = ${fmt(GA_SOIL_KS, 1)} مم/س، ψ = ${GA_SOIL.psiMm} مم، تربة رملية طميية). تتناوب النبضات على مصدر مشترك بتدفق ${SOURCE_FLOW_M3H} م³/س حسب الأولوية، مع راحة ${PULSE_REST_MIN} دقيقة بين نبضات الحوض نفسه.`,
+              `Hydraulic layer: each basin's irrigation is split into pulses of at most ${MAX_PULSE_MM} mm; infiltration and wetting-front depth follow Green-Ampt (Ks = ${fmt(GA_SOIL_KS, 1)} mm/h, ψ = ${GA_SOIL.psiMm} mm, sandy loam). Pulses alternate by priority on a shared ${SOURCE_FLOW_M3H} m³/h source, with a ${PULSE_REST_MIN}-minute rest between pulses of the same basin.`,
             )}
           </li>
           <li>

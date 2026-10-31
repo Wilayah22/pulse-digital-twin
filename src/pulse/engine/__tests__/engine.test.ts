@@ -12,6 +12,14 @@ import {
   buildScenarioWeather,
   deliverySchedule,
   estimateImpact,
+  cumulativeInfiltration,
+  timeToInfiltrate,
+  infiltrationRate,
+  planPulses,
+  scheduleTurn,
+  MAX_PULSE_MM,
+  PULSE_REST_MIN,
+  GA_SOIL,
   sanitizeImpact,
   DEFAULT_IMPACT,
   extraterrestrialRadiation,
@@ -293,5 +301,68 @@ describe("oasis impact estimate", () => {
     const r = run();
     const flipped = { pulse: r.traditional, traditional: r.pulse };
     assert.equal(estimateImpact(flipped).annualWaterM3, 0);
+  });
+});
+
+describe("Green-Ampt pulses (hydraulic layer)", () => {
+  const soil = { ...GA_SOIL, ksMmH: 10.9 };
+
+  it("inverts cleanly between time and cumulative infiltration", () => {
+    for (const f of [1, 5, 20, 60]) {
+      const t = timeToInfiltrate(f, soil, 0.25);
+      near(cumulativeInfiltration(t, soil, 0.25), f, 1e-6);
+    }
+  });
+
+  it("matches the early-time √t limit and slows towards Ks", () => {
+    const t = 0.001;
+    near(cumulativeInfiltration(t, soil, 0.25), Math.sqrt(2 * soil.ksMmH * soil.psiMm * 0.25 * t), 0.01);
+    assert.ok(infiltrationRate(5, soil, 0.25) > infiltrationRate(50, soil, 0.25));
+    near(infiltrationRate(1e7, soil, 0.25), soil.ksMmH, 1e-3);
+  });
+
+  it("splits irrigation into pulses that carry exactly the allocated water", () => {
+    const base = { depletionMm: 70, area: 250, thetaFC: 0.2, rootDepthMm: 1000, soil, flowM3H: 8, efficiency: 0.9, maxPulseMm: 20 };
+    const pulses = planPulses({ ...base, irrigationMm: 55, leachingMm: 8 });
+    assert.equal(pulses.filter((p) => !p.leaching).length, 3);
+    assert.ok(pulses[pulses.length - 1].leaching);
+    near(pulses.reduce((a, p) => a + p.depthMm, 0), 63, 1e-9);
+    for (const p of pulses.filter((x) => !x.leaching)) assert.ok(p.frontMm < base.rootDepthMm);
+    // Each pulse meets wetter soil, so the step-test speed falls pulse after pulse.
+    assert.ok(pulses[0].startRateMmH > pulses[1].startRateMmH);
+  });
+
+  it("reads a dry basin as faster than a wet one in the first pulse", () => {
+    const base = { irrigationMm: 10, leachingMm: 0, area: 250, thetaFC: 0.2, rootDepthMm: 1000, soil, flowM3H: 8, efficiency: 0.9, maxPulseMm: 20 };
+    const dry = planPulses({ ...base, depletionMm: 90 })[0];
+    const wet = planPulses({ ...base, depletionMm: 15 })[0];
+    assert.ok(dry.startRateMmH > wet.startRateMmH);
+  });
+
+  it("opens one valve at a time and rests each basin between its pulses", () => {
+    const mk = (n: number) => planPulses({ irrigationMm: n, leachingMm: 0, depletionMm: n, area: 250, thetaFC: 0.2, rootDepthMm: 1000, soil, flowM3H: 8, efficiency: 0.9, maxPulseMm: 20 });
+    const sched = scheduleTurn(
+      [
+        { basin: "A", priority: 0.9, pulses: mk(60) },
+        { basin: "B", priority: 0.5, pulses: mk(30) },
+      ],
+      20,
+    );
+    assert.equal(sched[0].basin, "A", "highest priority goes first");
+    const byStart = [...sched].sort((a, b) => a.start - b.start);
+    for (let i = 1; i < byStart.length; i++) assert.ok(byStart[i].start >= byStart[i - 1].end - 1e-9, "no overlapping valves");
+    for (const b of ["A", "B"]) {
+      const mine = sched.filter((e) => e.basin === b);
+      for (let i = 1; i < mine.length; i++) assert.ok(mine[i].start >= mine[i - 1].soakEnd + 20 - 1e-9);
+    }
+  });
+
+  it("schedules exactly the water each strategy uses, in pulses no deeper than the limit", () => {
+    const r = run();
+    for (const s of [r.pulse, r.traditional]) {
+      s.schedules.forEach((day, i) => near(day.reduce((a, e) => a + e.volumeM3, 0), s.dailyUse[i], 1e-6));
+    }
+    for (const b of r.pulse.basins) for (const d of b.days) for (const p of d.pulses) assert.ok(p.depthMm <= MAX_PULSE_MM + 1e-9);
+    assert.ok(PULSE_REST_MIN > 0);
   });
 });

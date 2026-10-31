@@ -3,9 +3,11 @@
 import {
   APPLICATION_EFFICIENCY,
   BASINS,
+  SOIL,
   classifyHealth,
   depthToVolume,
   type BasinHealth,
+  type Pulse,
   type BasinId,
   type PriorityLevel,
   type SimulationResult,
@@ -40,6 +42,9 @@ export interface BasinDayView {
   lastIrrigation: string;
   lastIrrigationEn: string;
   stressDays: number;
+  pulses: Pulse[];
+  wettingFrontMm: number;
+  rootDepthMm: number;
 }
 
 export function strategyOf(result: SimulationResult, strategy: "pulse" | "traditional"): StrategyResult {
@@ -86,6 +91,9 @@ export function basinDayViews(result: SimulationResult, strategy: "pulse" | "tra
       lastIrrigation,
       lastIrrigationEn,
       stressDays: b.stressDays,
+      pulses: d.pulses,
+      wettingFrontMm: d.wettingFrontMm,
+      rootDepthMm: SOIL.rootDepth * 1000,
     };
   });
 }
